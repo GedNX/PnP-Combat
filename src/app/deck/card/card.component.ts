@@ -31,6 +31,9 @@ export class CardComponent {
     this.character.setInitiative(initiative);
   }
 
+  setPriority(priority: number) {
+    this.character.setPriority(priority);
+  }
 
   isOnCombat(): boolean {
     return this.combatService.isOnCombat();

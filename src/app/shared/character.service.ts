@@ -18,7 +18,12 @@ export class CharacterService {
   }
 
   sortByInitiative() {
-    let compareFn = (a: Character, b: Character) => a.initiative > b.initiative ? -1 : 1;
+    let compareFn = (a: Character, b: Character) => {
+      if (a.initiative === b.initiative) {
+        return a.priority > b.priority ? -1 : 1;
+      }
+      return a.initiative > b.initiative ? -1 : 1;
+    };
     this.characters.sort(compareFn);
   }
 

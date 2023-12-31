@@ -16,7 +16,9 @@
            [style]="character.priorityRequired ? 'color: red':''">
     <input *ngIf="character.priorityRequired"
            placeholder="Priorität"
-           type="number">
+           type="number"
+           #priority
+           (change)="setPriority(parseInt(priority.value))">
   </span>
   <span *ngIf="isOnCombat() && !character.isPlayer">
     <input type="number"
