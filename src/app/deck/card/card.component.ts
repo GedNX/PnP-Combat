@@ -20,12 +20,12 @@ export class CardComponent {
   }
 
   setInitiative(initiative: number) {
-    this.character.dexterityRequired = false;
+    this.character.priorityRequired = false;
 
     this.characterService.characters.forEach(c => {
       if (c.initiative === initiative) {
-        c.dexterityRequired = true;
-        this.character.dexterityRequired = true;
+        c.priorityRequired = true;
+        this.character.priorityRequired = true;
       }
     });
     this.character.setInitiative(initiative);

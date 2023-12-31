@@ -13,9 +13,9 @@
            placeholder="Initiative"
            (change)="setInitiative(parseInt(initiative.value))"
            #initiative
-           [style]="character.dexterityRequired ? 'color: red':''">
-    <input *ngIf="character.dexterityRequired"
-           placeholder="Geschicklichkeit"
+           [style]="character.priorityRequired ? 'color: red':''">
+    <input *ngIf="character.priorityRequired"
+           placeholder="Priorität"
            type="number">
   </span>
   <span *ngIf="isOnCombat() && !character.isPlayer">
