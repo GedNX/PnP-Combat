@@ -1,0 +1,27 @@
+<div>
+  <span [style]="character.isPlayer ? 'color: blue' : 'color: green'">
+    * {{ character.name }}
+  </span>
+  <span *ngIf="!character.isPlayer">
+    :: {{ character.hitPoint }}
+  </span>
+  <span *ngIf="!isOnCombat()">
+    <button *ngIf="!character.isPlayer"
+            class="btn btn-outline-danger btn-sm"
+            (click)="removeCharacter()">-</button>
+    <input type="number"
+           placeholder="Initiative"
+           (change)="setInitiative(parseInt(initiative.value))"
+           #initiative
+           [style]="character.dexterityRequired ? 'color: red':''">
+    <input *ngIf="character.dexterityRequired"
+           placeholder="Geschicklichkeit"
+           type="number">
+  </span>
+  <span *ngIf="isOnCombat() && !character.isPlayer">
+    <input type="number"
+           placeholder="Treffer"
+           (keydown)="damage($event, hit.value)"
+           #hit>
+  </span>
+</div>
