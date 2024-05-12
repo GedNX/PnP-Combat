@@ -22,11 +22,9 @@ export class CardComponent {
   setInitiative(initiative: number) {
     this.character.priorityRequired = false;
 
-    this.characterService.characters.forEach(c => {
-      if (c.initiative === initiative) {
+    this.characterService.characters.filter(c => c.initiative === initiative).forEach(c => {
         c.priorityRequired = true;
         this.character.priorityRequired = true;
-      }
     });
     this.character.setInitiative(initiative);
   }
@@ -41,11 +39,8 @@ export class CardComponent {
 
   protected readonly parseInt = parseInt;
 
-  damage($event: KeyboardEvent, value: string) {
-    if ($event.key === 'Enter') {
-      this.character.hitPoint -= parseInt(value)
-    }
-    console.log($event)
+  damage(value: string) {
+    this.character.hitPoint -= parseInt(value)
   }
 
   removeCharacter() {

@@ -1,29 +1,32 @@
-<div>
-  <span [style]="character.isPlayer ? 'color: blue' : 'color: green'">
-    * {{ character.name }}
-  </span>
-  <span *ngIf="!character.isPlayer">
-    :: {{ character.hitPoint }}
-  </span>
-  <span *ngIf="!isOnCombat()">
-    <button *ngIf="!character.isPlayer"
-            class="btn btn-outline-danger btn-sm"
-            (click)="removeCharacter()">-</button>
-    <input type="number"
-           placeholder="Initiative"
-           (change)="setInitiative(parseInt(initiative.value))"
-           #initiative
-           [style]="character.priorityRequired ? 'color: red':''">
-    <input *ngIf="character.priorityRequired"
-           placeholder="Priorität"
-           type="number"
-           #priority
-           (change)="setPriority(parseInt(priority.value))">
-  </span>
-  <span *ngIf="isOnCombat() && !character.isPlayer">
-    <input type="number"
-           placeholder="Treffer"
-           (keydown)="damage($event, hit.value)"
-           #hit>
-  </span>
+<div class="card d-inline-flex flex-wrap">
+  <div class="card-body">
+    <h4 class="card-title center-text" [style]="character.isPlayer ? 'color: blue' : 'color: green'">
+        {{ character.name }}
+      <button *ngIf="!character.isPlayer"
+              class="btn btn-outline-danger btn-sm"
+              (click)="removeCharacter()">-</button>
+    </h4>
+    <div class="tp center-text" *ngIf="!character.isPlayer">
+      <b>TP: </b>
+      <span>{{ character.hitPoint }}</span>
+    </div>
+    <div class="hit-points" *ngIf="isOnCombat() && !character.isPlayer">
+      <input type="number"
+             placeholder="Treffer"
+             (keydown.enter)="damage(hit.value)"
+             #hit>
+    </div>
+    <div *ngIf="!isOnCombat()">
+      <input type="number"
+             placeholder="Initiative"
+             (change)="setInitiative(parseInt(initiative.value))"
+             #initiative
+             [style]="character.priorityRequired ? 'color: red':''">
+      <input *ngIf="character.priorityRequired"
+             placeholder="Priorität"
+             type="number"
+             #priority
+             (change)="setPriority(parseInt(priority.value))">
+    </div>
+  </div>
 </div>
