@@ -15,6 +15,7 @@
     </div>
     <div class="form-group">
       <input [disabled]="onFight"
+             (keydown.enter)="createCharacter(name.value, Number(hitPoint.value), Boolean(isPlayer.checked))"
              placeholder="Trefferpunkte"
              type="number"
              class="form-control"
@@ -31,10 +32,12 @@
 
 <hr>
 <div class="row">
+  <div class="container">
   <app-card
     *ngFor="let character of characters"
     [character]="character">
   </app-card>
+  </div>
 </div>
 <hr>
 <div>
