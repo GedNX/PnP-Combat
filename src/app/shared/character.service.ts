@@ -8,8 +8,8 @@ export class CharacterService {
     new Character('Reiniar', 0, true),
     new Character('Rogar', 0, true),
     new Character('Strike', 0, true),
-    new Character('Torfin', 0, true),
-    new Character('Grimmbart', 0, true)
+    new Character('Torfin', 0, true)
+    // new Character('Grimmbart', 0, true)
   ]
   characters: Character[] = []
 
