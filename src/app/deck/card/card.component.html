@@ -1,32 +1,36 @@
 <div class="card d-inline-flex flex-wrap">
   <div class="card-body">
     <h4 class="card-title center-text" [style]="character.isPlayer ? 'color: blue' : 'color: green'">
-        {{ character.name }}
-      <button *ngIf="!character.isPlayer"
-              class="btn btn-outline-danger btn-sm"
-              (click)="removeCharacter()">-</button>
+      {{ character.name }}
+      @if (!character.isPlayer) {
+        <button class="btn btn-outline-danger btn-sm" (click)="removeCharacter()">-</button>
+      }
     </h4>
-    <div class="tp center-text" *ngIf="!character.isPlayer">
-      <b>TP: </b>
-      <span>{{ character.hitPoint }}</span>
-    </div>
-    <div class="hit-points" *ngIf="isOnCombat() && !character.isPlayer">
-      <input type="number"
-             placeholder="Treffer"
-             (keydown.enter)="damage(hit.value)"
-             #hit>
-    </div>
-    <div *ngIf="!isOnCombat()">
-      <input type="number"
-             placeholder="Initiative"
-             (change)="setInitiative(parseInt(initiative.value))"
-             #initiative
-             [style]="character.priorityRequired ? 'color: red':''">
-      <input *ngIf="character.priorityRequired"
-             placeholder="Priorität"
-             type="number"
-             #priority
-             (change)="setPriority(parseInt(priority.value))">
-    </div>
+    @if (!character.isPlayer) {
+      <div class="tp center-text">
+        <b>TP: </b>
+        <span>{{ character.hitPoint }}</span>
+      </div>
+    }
+    @if (isOnCombat() && !character.isPlayer) {
+      <div class="hit-points">
+        <input type="number"
+               placeholder="Treffer"
+               (keydown.enter)="damage(hit.value)"
+               #hit>
+      </div>
+    } @else if (!isOnCombat()) {
+        <input type="number"
+               placeholder="Initiative"
+               (change)="setInitiative(parseInt(initiative.value))"
+               #initiative
+               [style]="character.priorityRequired ? 'color: red':''">
+        @if (character.priorityRequired) {
+          <input placeholder="Priorität"
+                 type="number"
+                 #priority
+                 (change)="setPriority(parseInt(priority.value))">
+        }
+    }
   </div>
 </div>

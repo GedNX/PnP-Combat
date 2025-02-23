@@ -1,19 +1,21 @@
-import {Component, OnInit} from '@angular/core';
-import {Character} from "../model/character.model";
-import {CharacterService} from "../shared/character.service";
-import {CombatService} from "../shared/combat.service";
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { Character } from "../model/character.model";
+import { CharacterService } from "../shared/character.service";
+import { CombatService } from "../shared/combat.service";
+import { CardComponent } from "./card/card.component";
 
 @Component({
   selector: 'app-deck',
+  imports: [CardComponent],
   templateUrl: './deck.component.html',
-  styleUrls: ['./deck.component.scss']
+  styleUrls: ['./deck.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DeckComponent implements OnInit {
+  protected characterService = inject(CharacterService);
+  protected combatService = inject(CombatService);
   protected characters: Character[] = [];
   protected onFight: boolean = false;
-
-  constructor(private characterService: CharacterService, private combatService: CombatService) {
-  }
 
   ngOnInit() {
     this.characters = this.characterService.characters;

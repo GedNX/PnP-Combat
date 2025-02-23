@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
+import { DeckComponent } from "./deck/deck.component";
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  imports: [DeckComponent],
+  template: `<app-deck/>`
 })
-export class AppComponent {
-  title = 'PnP-Combat';
-}
+export class AppComponent {}

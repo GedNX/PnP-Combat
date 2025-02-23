@@ -1,23 +1,19 @@
-import {Component, Input} from '@angular/core';
-import {Character} from "../../model/character.model";
-import {CharacterService} from "../../shared/character.service";
-import {CombatService} from "../../shared/combat.service";
+import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
+import { Character } from "../../model/character.model";
+import { CharacterService } from "../../shared/character.service";
+import { CombatService } from "../../shared/combat.service";
 
 @Component({
   selector: 'app-card',
   templateUrl: './card.component.html',
-  styleUrls: ['./card.component.scss']
+  styleUrls: ['./card.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class CardComponent {
   @Input() character!: Character;
-  private characterService: CharacterService;
-  private combatService: CombatService;
-
-  constructor(characterService: CharacterService, combatService: CombatService) {
-    this.characterService = characterService;
-    this.combatService = combatService;
-  }
+  protected characterService = inject(CharacterService);
+  protected combatService = inject(CombatService);
 
   setInitiative(initiative: number) {
     this.character.priorityRequired = false;
