@@ -1,18 +1,18 @@
 <div class="card d-inline-flex flex-wrap">
   <div class="card-body">
-    <h4 class="card-title center-text" [style]="character.isPlayer ? 'color: blue' : 'color: green'">
-      {{ character.name }}
-      @if (!character.isPlayer) {
+    <h4 class="card-title center-text" [style]="character().isPlayer ? 'color: blue' : 'color: green'">
+      {{ character().name }}
+      @if (!character().isPlayer) {
         <button class="btn btn-outline-danger btn-sm" (click)="removeCharacter()">-</button>
       }
     </h4>
-    @if (!character.isPlayer) {
+    @if (!character().isPlayer) {
       <div class="tp center-text">
         <b>TP: </b>
-        <span>{{ character.hitPoint }}</span>
+        <span>{{ character().hitPoint }}</span>
       </div>
     }
-    @if (isOnCombat() && !character.isPlayer) {
+    @if (isOnCombat() && !character().isPlayer) {
       <div class="hit-points">
         <input type="number"
                placeholder="Treffer"
@@ -24,8 +24,8 @@
                placeholder="Initiative"
                (change)="setInitiative(parseInt(initiative.value))"
                #initiative
-               [style]="character.priorityRequired ? 'color: red':''">
-        @if (character.priorityRequired) {
+               [style]="character().priorityRequired ? 'color: red':''">
+        @if (character().priorityRequired) {
           <input placeholder="Priorität"
                  type="number"
                  #priority
