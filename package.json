@@ -6,7 +6,9 @@
     "build": "ng build",
     "buildOnline": "ng build --base-href='/dev/PnP-Combat/'",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "prettier:check": "prettier -c",
+    "prettier:fix": "prettier . --write"
   },
   "private": true,
   "dependencies": {
