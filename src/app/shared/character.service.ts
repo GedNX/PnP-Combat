@@ -1,5 +1,5 @@
-import {Injectable, OnInit} from "@angular/core";
-import {Character} from "../model/character.model";
+import { Injectable, OnInit } from '@angular/core';
+import { Character } from '../model/character.model';
 
 @Injectable()
 export class CharacterService {
@@ -8,13 +8,13 @@ export class CharacterService {
     new Character('Reiniar', 0, true),
     new Character('Rogar', 0, true),
     new Character('Strike', 0, true),
-    new Character('Torfin', 0, true)
+    new Character('Torfin', 0, true),
     // new Character('Grimmbart', 0, true)
-  ]
-  characters: Character[] = []
+  ];
+  characters: Character[] = [];
 
   constructor() {
-    this.defaultCharacters.forEach(c => this.characters.push(c));
+    this.defaultCharacters.forEach((c) => this.characters.push(c));
   }
 
   sortByInitiative() {
@@ -32,7 +32,7 @@ export class CharacterService {
   }
 
   reset() {
-    this.characters.splice(0, this.characters.length)
-    this.defaultCharacters.forEach(c => this.characters.push(c));
+    this.characters.splice(0, this.characters.length);
+    this.defaultCharacters.forEach((c) => this.characters.push(c));
   }
 }

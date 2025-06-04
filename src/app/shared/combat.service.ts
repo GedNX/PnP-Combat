@@ -1,11 +1,11 @@
-import {Injectable} from "@angular/core";
+import { Injectable } from '@angular/core';
 
 @Injectable()
 export class CombatService {
   private onCombat: boolean = false;
 
   isOnCombat(): boolean {
-    return this.onCombat
+    return this.onCombat;
   }
 
   startCombat(): void {

@@ -1,9 +1,17 @@
 <div class="card d-inline-flex flex-wrap">
   <div class="card-body">
-    <h4 class="card-title center-text" [style]="character().isPlayer ? 'color: blue' : 'color: green'">
+    <h4
+      class="card-title center-text"
+      [style]="character().isPlayer ? 'color: blue' : 'color: green'"
+    >
       {{ character().name }}
       @if (!character().isPlayer) {
-        <button class="btn btn-outline-danger btn-sm" (click)="removeCharacter()">-</button>
+        <button
+          class="btn btn-outline-danger btn-sm"
+          (click)="removeCharacter()"
+        >
+          -
+        </button>
       }
     </h4>
     @if (!character().isPlayer) {
@@ -14,23 +22,29 @@
     }
     @if (isOnCombat() && !character().isPlayer) {
       <div class="hit-points">
-        <input type="number"
-               placeholder="Treffer"
-               (keydown.enter)="damage(hit.value)"
-               #hit>
+        <input
+          type="number"
+          placeholder="Treffer"
+          (keydown.enter)="damage(hit.value)"
+          #hit
+        />
       </div>
     } @else if (!isOnCombat()) {
-        <input type="number"
-               placeholder="Initiative"
-               (change)="setInitiative(parseInt(initiative.value))"
-               #initiative
-               [style]="character().priorityRequired ? 'color: red':''">
-        @if (character().priorityRequired) {
-          <input placeholder="Priorität"
-                 type="number"
-                 #priority
-                 (change)="setPriority(parseInt(priority.value))">
-        }
+      <input
+        type="number"
+        placeholder="Initiative"
+        (change)="setInitiative(parseInt(initiative.value))"
+        #initiative
+        [style]="character().priorityRequired ? 'color: red' : ''"
+      />
+      @if (character().priorityRequired) {
+        <input
+          placeholder="Priorität"
+          type="number"
+          #priority
+          (change)="setPriority(parseInt(priority.value))"
+        />
+      }
     }
   </div>
 </div>

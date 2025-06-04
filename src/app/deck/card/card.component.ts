@@ -1,7 +1,12 @@
-import {ChangeDetectionStrategy, Component, inject, input,} from '@angular/core';
-import {Character} from '../../model/character.model';
-import {CharacterService} from '../../shared/character.service';
-import {CombatService} from '../../shared/combat.service';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+} from '@angular/core';
+import { Character } from '../../model/character.model';
+import { CharacterService } from '../../shared/character.service';
+import { CombatService } from '../../shared/combat.service';
 
 @Component({
   selector: 'app-card',
