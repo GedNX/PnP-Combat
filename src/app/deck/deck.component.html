@@ -1,65 +1,22 @@
-<div class="row">
-  <div class="col-xs-12 col-md-8 col-md-offset-2">
-    <div class="form-group">
-      <input
-        [disabled]="onFight()"
-        placeholder="Monstername"
-        type="text"
-        class="form-control"
-        #name
-      />
-    </div>
-    <div class="form-group visually-hidden">
-      <label class="text-secondary">Real Player</label>
-      <input [disabled]="true" type="checkbox" #isPlayer />
-    </div>
-    <div class="form-group">
-      <input
-        [disabled]="onFight()"
-        (keydown.enter)="
-          createCharacter(
-            name.value,
-            Number(hitPoint.value),
-            Boolean(isPlayer.checked)
-          )
-        "
-        placeholder="Trefferpunkte"
-        type="number"
-        class="form-control"
-        #hitPoint
-      />
-    </div>
-    <button
-      [disabled]="onFight()"
-      class="btn btn-primary"
-      (click)="
-        createCharacter(
-          name.value,
-          Number(hitPoint.value),
-          Boolean(isPlayer.checked)
-        )
-      "
-    >
-      Monster hinzufügen
-    </button>
-  </div>
-</div>
+<main class="battle-shell">
+  <header class="hero"><div><p class="eyebrow">DUNGEON MASTER · KAMPFPLANER</p><h1>PnP Combat</h1><p class="subtitle">Kampf vorbereiten, Initiative festlegen und den Überblick behalten.</p></div><span class="status" [class.active]="onFight()">{{ onFight() ? 'KAMPF LÄUFT' : 'VORBEREITUNG' }}</span></header>
 
-<hr />
-<div class="row">
-  <div class="container">
-    @for (character of characters(); track character.name) {
-      <app-card [character]="character" />
-    }
-  </div>
-</div>
-<hr />
-<div>
-  @if (onFight()) {
-    <button class="btn btn-primary" (click)="fightEnd()">Kampf beenden</button>
-  } @else {
-    <button class="btn btn-primary" [disabled]="onFight()" (click)="fight()">
-      Kampf beginnen
-    </button>
+  @if (!onFight()) {
+    <section class="setup panel">
+      <div><h2>Teilnehmer hinzufügen</h2><p class="muted">Lege zuerst alle Kreaturen und ihre Trefferpunkte fest.</p></div>
+      <div class="add-form">
+        <input #name placeholder="Name (z. B. Goblin)" type="text" (keydown.enter)="createCharacter(name.value, hitPoint.value, participantType() === 'player')" />
+        <input #hitPoint placeholder="Max. TP" type="number" min="0" />
+        <div class="type-dropdown"><button class="type-trigger" (click)="toggleType()" [attr.aria-expanded]="typeOpen()" aria-haspopup="listbox">{{ participantType() === 'monster' ? 'Monster' : 'Spielerfigur' }} <span class="chevron">⌄</span></button>@if (typeOpen()) { <div class="type-backdrop" (click)="typeOpen.set(false)"></div><div class="type-menu" role="listbox"><button [class.selected]="participantType() === 'monster'" (click)="chooseType('monster')">Monster <span>⚔</span></button><button [class.selected]="participantType() === 'player'" (click)="chooseType('player')">Spielerfigur <span>♙</span></button></div> }</div>
+        <button class="btn btn-primary" (click)="createCharacter(name.value, hitPoint.value, participantType() === 'player')">Hinzufügen</button>
+      </div>
+      <div class="saved-library"><span class="library-label">Aus Bibliothek hinzufügen</span><button class="library-trigger" (click)="toggleLibrary()" [attr.aria-expanded]="libraryOpen()" aria-haspopup="listbox">Teilnehmer auswählen … <span class="chevron">⌄</span></button>@if (libraryOpen()) { <div class="library-backdrop" (click)="closeLibrary()"></div><div class="library-menu" role="listbox"><section><h3>Monster</h3>@for (monster of savedMonsters(); track monster.name) { <button class="library-item" (click)="chooseSavedParticipant('monster', monster.name)"><span>{{ monster.name }}</span><small>{{ monster.maxHitPoint }} TP</small></button> } @if (!savedMonsters().length) { <p class="library-empty">Keine Monster gespeichert.</p> }</section><section><h3>Spielerfiguren</h3>@for (player of availableSavedPlayers(); track player.name) { <button class="library-item" (click)="chooseSavedParticipant('player', player.name)"><span>{{ player.name }}</span>@if (player.maxHitPoint !== null) { <small>{{ player.maxHitPoint }} TP</small> }</button> } @if (!availableSavedPlayers().length) { <p class="library-empty">Keine verfügbaren Spielerfiguren.</p> }</section></div> }</div>
+    </section>
   }
-</div>
+
+  <section class="participants"><div class="section-heading"><div><h2>{{ onFight() ? 'Initiativereihenfolge' : 'Teilnehmer' }}</h2><p class="muted">{{ onFight() ? 'Schaden wird direkt von den aktuellen TP abgezogen.' : 'Initiative und Geschicklichkeits-Modifikator bestimmen die Reihenfolge.' }}</p></div><span class="count">{{ characters().length }} Figuren</span></div>
+    <div class="cards" [class.in-combat]="onFight()">@for (character of characters(); track character.name + $index) { <app-card [character]="character" [revision]="revision()" (changed)="refresh()" /> } @empty { <p class="empty">Noch keine Teilnehmer angelegt.</p> }</div>
+  </section>
+
+  <footer class="actions">@if (onFight()) { <button class="btn btn-outline-secondary" (click)="fightEnd()">Kampf beenden</button> } @else { <button class="btn btn-primary btn-start" [disabled]="!canStartFight()" (click)="fight()">Kampf beginnen <span>→</span></button><small>Für alle Teilnehmer muss eine Initiative gesetzt sein.</small> }</footer>
+</main>

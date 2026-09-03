@@ -1,50 +1,10 @@
-<div class="card d-inline-flex flex-wrap">
-  <div class="card-body">
-    <h4
-      class="card-title center-text"
-      [style]="character().isPlayer ? 'color: blue' : 'color: green'"
-    >
-      {{ character().name }}
-      @if (!character().isPlayer) {
-        <button
-          class="btn btn-outline-danger btn-sm"
-          (click)="removeCharacter()"
-        >
-          -
-        </button>
-      }
-    </h4>
-    @if (!character().isPlayer) {
-      <div class="tp center-text">
-        <b>TP: </b>
-        <span>{{ character().hitPoint }}</span>
-      </div>
-    }
-    @if (isOnCombat() && !character().isPlayer) {
-      <div class="hit-points">
-        <input
-          type="number"
-          placeholder="Treffer"
-          (keydown.enter)="damage(hit.value)"
-          #hit
-        />
-      </div>
-    } @else if (!isOnCombat()) {
-      <input
-        type="number"
-        placeholder="Initiative"
-        (change)="setInitiative(parseInt(initiative.value))"
-        #initiative
-        [style]="character().priorityRequired ? 'color: red' : ''"
-      />
-      @if (character().priorityRequired) {
-        <input
-          placeholder="Priorität"
-          type="number"
-          #priority
-          (change)="setPriority(parseInt(priority.value))"
-        />
-      }
-    }
-  </div>
-</div>
+<article class="participant-card" [class.player]="character().isPlayer" [class.combat]="isOnCombat()" [class.no-hp]="isOnCombat() && character().maxHitPoint === null" [class.defeated]="character().hitPoint === 0">
+  @if (!isOnCombat()) { <div class="card-top"><button class="remove" (click)="requestRemove()" aria-label="Teilnehmer entfernen">×</button></div> }
+  <h3>{{ character().name }}</h3>
+  @if (!isOnCombat() || character().maxHitPoint !== null) { <div class="hp"><span>TP</span><strong>{{ character().hitPoint ?? '—' }}</strong>@if (character().maxHitPoint !== null) { <small>/ {{ character().maxHitPoint }}</small> }</div> }
+  @if (isOnCombat()) { @if (character().maxHitPoint !== null) { <div class="damage-row"><input #hit type="number" min="1" placeholder="TP-Betrag" (keydown.enter)="damage(hit.value); hit.value = ''" /><button class="btn btn-danger" (click)="damage(hit.value); hit.value = ''">Schaden</button><button class="btn btn-heal" (click)="heal(hit.value); hit.value = ''">Heilen</button></div> }<label class="status-field">Status / Notizen<textarea #combatStatus rows="2" [value]="character().status" placeholder="z. B. vergiftet, konzentriert …" (change)="character().status = combatStatus.value; changed.emit()"></textarea></label> } @else {
+    <div class="fields"><label><span>Max. TP @if (character().isPlayer) { <small>(optional)</small> }</span><input #maxHp type="number" min="0" [value]="character().maxHitPoint ?? ''" (change)="configureHitPoints(maxHp.value)" /></label><label><span>Initiative</span><input #initiative type="number" [value]="character().initiative === -1 ? '' : character().initiative" (change)="setInitiative(initiative.value)" /></label>@if (needsDexterityModifier()) { <label><span>GE-Mod.</span><input #dexMod type="number" [value]="character().dexterityModifier ?? ''" (change)="setDexterityModifier(dexMod.value)" /></label> }</div>
+    <label class="status-field"><span>Beschreibung / Status</span><textarea #status rows="2" [value]="character().status" placeholder="z. B. vergiftet, konzentriert …" (change)="character().status = status.value; changed.emit()"></textarea></label>
+  }
+</article>
+@if (confirmDelete()) { <div class="delete-backdrop" (click)="cancelRemove()"><div class="delete-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()"><p class="eyebrow">SPIELERFIGUR ENTFERNEN</p><h2>{{ character().name }} entfernen?</h2><p>Die Figur wird aus der aktuellen Vorbereitung entfernt.</p><div class="delete-actions"><button class="btn btn-outline-secondary" (click)="cancelRemove()">Abbrechen</button><button class="btn btn-danger" (click)="removeCharacter()">Entfernen</button></div></div></div> }
