@@ -30,7 +30,7 @@ export class DeckComponent {
   constructor() { this.refresh(); }
   protected refresh() {
     this.characters.set([...this.characterService.characters]);
-    this.characterService.persistPreparation();
+    this.characterService.persistCurrentState();
     this.revision.update((value) => value + 1);
     this.savedMonsters.set([...this.characterService.savedMonsters]);
     this.savedPlayers.set([...this.characterService.savedPlayers]);
@@ -97,12 +97,14 @@ export class DeckComponent {
     if (!this.canStartFight()) return;
     this.combatService.startCombat();
     this.characterService.sortByInitiative();
+    this.characterService.beginCombat();
     this.refresh();
     this.onFight.set(true);
   }
 
   fightEnd() {
     this.combatService.finishCombat();
+    this.characterService.finishCombat();
     this.refresh();
     this.onFight.set(false);
   }

@@ -7,6 +7,8 @@ export type LibraryImportMode = 'add' | 'overwrite' | 'replace';
 export class CharacterService {
   private readonly monsterStorageKey = 'pnp-combat-monsters';
   private readonly preparationStorageKey = 'pnp-combat-preparation';
+  private readonly combatStorageKey = 'pnp-combat-session';
+  private readonly combatActiveStorageKey = 'pnp-combat-active';
   private readonly playerStorageKey = 'pnp-combat-players';
   characters: Character[] = [];
   savedMonsters: MonsterTemplate[] = [];
@@ -15,7 +17,7 @@ export class CharacterService {
   constructor() {
     this.loadSavedMonsters();
     this.loadSavedPlayers();
-    this.loadPreparation();
+    this.loadCurrentState();
   }
 
   sortByInitiative() {
@@ -26,6 +28,32 @@ export class CharacterService {
         return b.initiative - a.initiative;
     };
     this.characters.sort(compareFn);
+  }
+
+  resetAfterCombat() {
+    this.characters = this.characters
+      .filter((character) => character.isPlayer)
+      .map((player) => {
+        player.setInitiative(-1);
+        return player;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
+  }
+
+  beginCombat() {
+    this.persistCombat();
+    this.persistPreparation(this.characters.filter((character) => character.isPlayer));
+  }
+
+  finishCombat() {
+    this.resetAfterCombat();
+    this.persistPreparation();
+    if (typeof localStorage !== 'undefined') localStorage.removeItem(this.combatStorageKey);
+  }
+
+  persistCurrentState() {
+    if (this.isCombatActive()) this.persistCombat();
+    else this.persistPreparation();
   }
 
   addCharacter(character: Character) {
@@ -117,15 +145,31 @@ export class CharacterService {
     if (typeof localStorage !== 'undefined') localStorage.setItem(this.playerStorageKey, JSON.stringify(this.savedPlayers));
   }
 
-  persistPreparation() {
-    if (typeof localStorage === 'undefined') return;
-    localStorage.setItem(this.preparationStorageKey, JSON.stringify(this.characters));
+  private persistPreparation(characters = this.characters) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(this.preparationStorageKey, JSON.stringify(characters));
+    }
   }
 
-  private loadPreparation() {
+  private persistCombat() {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(this.combatStorageKey, JSON.stringify(this.characters));
+    }
+  }
+
+  private isCombatActive() {
+    return typeof localStorage !== 'undefined' && localStorage.getItem(this.combatActiveStorageKey) === 'true';
+  }
+
+  private loadCurrentState() {
+    const loadedCombat = this.isCombatActive() && this.loadCharacters(this.combatStorageKey);
+    if (!loadedCombat) this.loadCharacters(this.preparationStorageKey);
+  }
+
+  private loadCharacters(storageKey: string) {
     if (typeof localStorage === 'undefined') return false;
     try {
-      const stored = JSON.parse(localStorage.getItem(this.preparationStorageKey) ?? 'null');
+      const stored = JSON.parse(localStorage.getItem(storageKey) ?? 'null');
       if (!Array.isArray(stored) || stored.length === 0) return false;
       const loaded = stored.filter((item) =>
         typeof item?.name === 'string' && item.name.trim().length > 0 &&
