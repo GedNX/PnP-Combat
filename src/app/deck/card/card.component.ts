@@ -9,9 +9,11 @@ import {
 import { Character } from '../../model/character.model';
 import { CharacterService } from '../../shared/character.service';
 import { CombatService } from '../../shared/combat.service';
+import { LucideX } from '@lucide/angular';
 
 @Component({
   selector: 'app-card',
+  imports: [LucideX],
   templateUrl: './card.component.html',
   styleUrls: ['./card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

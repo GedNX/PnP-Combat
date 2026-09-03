@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Character, MonsterTemplate, PlayerTemplate } from '../model/character.model';
 
+export type LibraryImportMode = 'add' | 'overwrite' | 'replace';
+
 @Injectable()
 export class CharacterService {
   private readonly monsterStorageKey = 'pnp-combat-monsters';
@@ -42,6 +44,34 @@ export class CharacterService {
     if (this.characters.some((character) => character.isPlayer && character.name.toLowerCase() === name.toLowerCase())) return null;
     const player = this.savedPlayers.find((saved) => saved.name === name);
     return player ? new Character(player.name, player.maxHitPoint, true) : null;
+  }
+
+  exportLibrary() {
+    const players = this.savedPlayers.map((player) => player.maxHitPoint === null
+      ? { name: player.name }
+      : { name: player.name, maxHitPoint: player.maxHitPoint });
+    return JSON.stringify({ version: 1, monsters: this.savedMonsters, players }, null, 2);
+  }
+
+  importLibrary(json: string, mode: LibraryImportMode) {
+    let data: { monsters: MonsterTemplate[]; players: PlayerTemplate[] };
+    try {
+      const parsed = JSON.parse(json);
+      if (!Array.isArray(parsed?.monsters) || !Array.isArray(parsed?.players)) return false;
+      const monsters = parsed.monsters.filter((monster: MonsterTemplate) => typeof monster?.name === 'string' && monster.name.trim() && Number.isFinite(monster.maxHitPoint) && monster.maxHitPoint >= 0);
+      const players = parsed.players.filter((player: PlayerTemplate) => typeof player?.name === 'string' && player.name.trim() && (player.maxHitPoint === undefined || player.maxHitPoint === null || (Number.isFinite(player.maxHitPoint) && player.maxHitPoint >= 0)));
+      if (monsters.length !== parsed.monsters.length || players.length !== parsed.players.length) return false;
+      data = { monsters, players: players.map((player: PlayerTemplate) => ({ ...player, maxHitPoint: player.maxHitPoint ?? null })) };
+    } catch { return false; }
+    if (mode === 'replace') { this.savedMonsters = data.monsters; this.savedPlayers = data.players; }
+    else {
+      const merge = <T extends { name: string }>(current: T[], incoming: T[]) => {
+        incoming.forEach((item) => { const index = current.findIndex((entry) => entry.name.toLowerCase() === item.name.toLowerCase()); if (index < 0) current.push(item); else if (mode === 'overwrite') current[index] = item; });
+      };
+      merge(this.savedMonsters, data.monsters); merge(this.savedPlayers, data.players);
+    }
+    this.persistSavedMonsters(); this.persistSavedPlayers();
+    return true;
   }
 
   private saveMonster(character: Character) {

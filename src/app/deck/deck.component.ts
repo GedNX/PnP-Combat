@@ -7,11 +7,13 @@ import {
 import { Character } from '../model/character.model';
 import { CharacterService } from '../shared/character.service';
 import { CombatService } from '../shared/combat.service';
+import { LibraryImportMode } from '../shared/character.service';
 import { CardComponent } from './card/card.component';
+import { LucideArrowRight, LucideChevronDown, LucideDownload, LucideSword, LucideUpload, LucideUserRound } from '@lucide/angular';
 
 @Component({
   selector: 'app-deck',
-  imports: [CardComponent],
+  imports: [CardComponent, LucideArrowRight, LucideChevronDown, LucideDownload, LucideSword, LucideUpload, LucideUserRound],
   templateUrl: './deck.component.html',
   styleUrls: ['./deck.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,8 +66,21 @@ export class DeckComponent {
   protected libraryOpen = signal(false);
   protected participantType = signal<'monster' | 'player'>('monster');
   protected typeOpen = signal(false);
+  protected importOpen = signal(false);
+  protected exportOpen = signal(false);
+  protected importJson = signal('');
+  protected importError = signal(false);
   protected toggleType() { this.typeOpen.update((open) => !open); }
   protected chooseType(type: 'monster' | 'player') { this.participantType.set(type); this.typeOpen.set(false); }
+  protected exportLibrary() {
+    this.importJson.set(this.characterService.exportLibrary());
+    this.exportOpen.set(true);
+  }
+  protected openImport() { this.importJson.set(''); this.importError.set(false); this.importOpen.set(true); }
+  protected confirmImport(mode: LibraryImportMode) {
+    if (!this.characterService.importLibrary(this.importJson(), mode)) { this.importError.set(true); return; }
+    this.importOpen.set(false); this.refresh();
+  }
   protected toggleLibrary() { this.libraryOpen.update((open) => !open); }
   protected closeLibrary() { this.libraryOpen.set(false); }
   protected chooseSavedParticipant(type: string, name: string) {
