@@ -48,6 +48,11 @@ export class DeckComponent {
 
   createCharacter(name: string, hitPointValue: string, isPlayer: boolean) {
     if (!name.trim()) return;
+    if (isPlayer && this.characterService.hasPlayer(name)) {
+      this.playerName.set(name);
+      this.playerNameConflict.set(this.characterService.playerNameConflict(name));
+      return;
+    }
     const hitPoint = Number(hitPointValue);
     const maximumHitPoints = hitPointValue.trim() === '' ? null : (Number.isFinite(hitPoint) && hitPoint >= 0 ? hitPoint : null);
     if (!isPlayer && maximumHitPoints === null) return;
@@ -65,6 +70,8 @@ export class DeckComponent {
   }
   protected libraryOpen = signal(false);
   protected participantType = signal<'monster' | 'player'>('monster');
+  protected playerNameConflict = signal<'participant' | 'library' | null>(null);
+  private playerName = signal('');
   protected typeOpen = signal(false);
   protected importOpen = signal(false);
   protected exportOpen = signal(false);
@@ -72,7 +79,17 @@ export class DeckComponent {
   protected exportFormat = signal<LibraryFormat>('yaml');
   protected importError = signal(false);
   protected toggleType() { this.typeOpen.update((open) => !open); }
-  protected chooseType(type: 'monster' | 'player') { this.participantType.set(type); this.typeOpen.set(false); }
+  protected chooseType(type: 'monster' | 'player') {
+    this.participantType.set(type);
+    this.typeOpen.set(false);
+    this.updatePlayerNameState();
+  }
+  protected updatePlayerNameState(name?: string) {
+    if (name !== undefined) this.playerName.set(name);
+    this.playerNameConflict.set(this.participantType() === 'player'
+      ? this.characterService.playerNameConflict(this.playerName())
+      : null);
+  }
   protected exportLibrary() {
     this.importJson.set(this.characterService.exportLibrary(this.exportFormat()));
     this.exportOpen.set(true);

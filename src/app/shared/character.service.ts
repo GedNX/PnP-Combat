@@ -67,6 +67,17 @@ export class CharacterService {
     return this.library.createPlayer(name);
   }
 
+  hasPlayer(name: string): boolean {
+    return this.playerNameConflict(name) !== null;
+  }
+
+  playerNameConflict(name: string): 'participant' | 'library' | null {
+    const normalizedName = name.trim().toLowerCase();
+    if (this.characters.some((character) => character.isPlayer && character.name.trim().toLowerCase() === normalizedName)) return 'participant';
+    if (this.savedPlayers.some((player) => player.name.trim().toLowerCase() === normalizedName)) return 'library';
+    return null;
+  }
+
   exportLibrary(format: LibraryFormat = 'yaml'): string { return this.library.export(format); }
 
   importLibrary(json: string, mode: LibraryImportMode): boolean {

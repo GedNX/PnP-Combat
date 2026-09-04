@@ -3,6 +3,7 @@
 html, body { min-height: 100%; }
 body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background:#171615; color:#f6efe5; }
 * { box-sizing: border-box; }
+.add-form input.existing-name { border-color:#c9574d; background:#2b1b1a; }.add-form input.existing-name:focus { outline-color:#c9574d; }.duplicate-hint { margin:8px 0 0; color:#e78b79; font-size:.82rem; }
 .fields label > span { white-space: nowrap; }
 .fields label, .status-field { font-size: .85rem !important; font-weight: 600; }
 .fields input, .status-field textarea { font-size: .85rem; }

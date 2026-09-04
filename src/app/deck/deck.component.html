@@ -24,6 +24,9 @@
           #name
           placeholder="Name (z. B. Goblin)"
           type="text"
+          [class.existing-name]="playerNameConflict() !== null"
+          [attr.aria-invalid]="playerNameConflict() !== null"
+          (input)="updatePlayerNameState(name.value)"
           (keydown.enter)="
             createCharacter(
               name.value,
@@ -75,6 +78,11 @@
           Hinzufügen
         </button>
       </div>
+      @if (playerNameConflict() === 'participant') {
+        <p class="duplicate-hint">Diese Spielerfigur wurde bereits als Teilnehmer hinzugefügt.</p>
+      } @else if (playerNameConflict() === 'library') {
+        <p class="duplicate-hint">Diese Spielerfigur liegt bereits in der Bibliothek. Verwende „Aus Bibliothek hinzufügen“.</p>
+      }
       <div class="saved-library">
         <span class="library-label">Aus Bibliothek hinzufügen</span
         ><button
