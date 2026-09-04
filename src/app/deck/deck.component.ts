@@ -7,7 +7,7 @@ import {
 import { Character } from '../model/character.model';
 import { CharacterService } from '../shared/character.service';
 import { CombatService } from '../shared/combat.service';
-import { LibraryImportMode } from '../shared/character.service';
+import { LibraryFormat, LibraryImportMode } from '../shared/character.service';
 import { CardComponent } from './card/card.component';
 import { LucideArrowRight, LucideChevronDown, LucideDownload, LucideSword, LucideUpload, LucideUserRound } from '@lucide/angular';
 
@@ -69,12 +69,17 @@ export class DeckComponent {
   protected importOpen = signal(false);
   protected exportOpen = signal(false);
   protected importJson = signal('');
+  protected exportFormat = signal<LibraryFormat>('yaml');
   protected importError = signal(false);
   protected toggleType() { this.typeOpen.update((open) => !open); }
   protected chooseType(type: 'monster' | 'player') { this.participantType.set(type); this.typeOpen.set(false); }
   protected exportLibrary() {
-    this.importJson.set(this.characterService.exportLibrary());
+    this.importJson.set(this.characterService.exportLibrary(this.exportFormat()));
     this.exportOpen.set(true);
+  }
+  protected setExportFormat(format: LibraryFormat) {
+    this.exportFormat.set(format);
+    if (this.exportOpen()) this.importJson.set(this.characterService.exportLibrary(format));
   }
   protected openImport() { this.importJson.set(''); this.importError.set(false); this.importOpen.set(true); }
   protected confirmImport(mode: LibraryImportMode) {

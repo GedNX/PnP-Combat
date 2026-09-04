@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Character, MonsterTemplate, PlayerTemplate } from '../model/character.model';
 import { CharacterStorageService } from './character-storage.service';
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 
 export type LibraryImportMode = 'add' | 'overwrite' | 'replace';
+export type LibraryFormat = 'json' | 'yaml';
 
 @Injectable({ providedIn: 'root' })
 export class CharacterLibraryService {
@@ -29,11 +31,12 @@ export class CharacterLibraryService {
     else if (character.maxHitPoint !== null) this.saveMonster(character);
   }
 
-  export(): string {
+  export(format: LibraryFormat = 'yaml'): string {
     const players = this.savedPlayers.map((player) => player.maxHitPoint === null
       ? { name: player.name }
       : { name: player.name, maxHitPoint: player.maxHitPoint });
-    return JSON.stringify({ version: 1, monsters: this.savedMonsters, players }, null, 2);
+    const data = { version: 1, monsters: this.savedMonsters, players };
+    return format === 'json' ? JSON.stringify(data, null, 2) : stringifyYaml(data);
   }
 
   import(json: string, mode: LibraryImportMode): boolean {
@@ -69,7 +72,7 @@ export class CharacterLibraryService {
 
   private parse(json: string): { monsters: MonsterTemplate[]; players: PlayerTemplate[] } | null {
     try {
-      const parsed = JSON.parse(json);
+      const parsed = this.parseDocument(json) as { monsters?: unknown[]; players?: unknown[] } | null;
       if (!Array.isArray(parsed?.monsters) || !Array.isArray(parsed?.players)) return null;
 
       const monsters = parsed.monsters.filter(this.isMonsterTemplate);
@@ -82,6 +85,14 @@ export class CharacterLibraryService {
       };
     } catch {
       return null;
+    }
+  }
+
+  private parseDocument(content: string): unknown {
+    try {
+      return JSON.parse(content);
+    } catch {
+      return parseYaml(content);
     }
   }
 

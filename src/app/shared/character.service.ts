@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Character } from '../model/character.model';
-import { CharacterLibraryService, LibraryImportMode } from './character-library.service';
+import { CharacterLibraryService, LibraryFormat, LibraryImportMode } from './character-library.service';
 import { CharacterStorageService } from './character-storage.service';
 
-export type { LibraryImportMode } from './character-library.service';
+export type { LibraryFormat, LibraryImportMode } from './character-library.service';
 
 @Injectable()
 export class CharacterService {
@@ -67,7 +67,7 @@ export class CharacterService {
     return this.library.createPlayer(name);
   }
 
-  exportLibrary(): string { return this.library.export(); }
+  exportLibrary(format: LibraryFormat = 'yaml'): string { return this.library.export(format); }
 
   importLibrary(json: string, mode: LibraryImportMode): boolean {
     return this.library.import(json, mode);
