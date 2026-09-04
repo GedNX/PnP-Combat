@@ -18,6 +18,7 @@ export class Character {
     public maxHitPoint: number | null,
     public isPlayer: boolean,
     public dexterityModifier: number | null = null,
+    public monsterNumber: number | null = null,
   ) { this.currentHitPoint = maxHitPoint; }
 
   get hitPoint(): number | null { return this.currentHitPoint; }

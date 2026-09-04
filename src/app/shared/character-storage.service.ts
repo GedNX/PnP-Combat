@@ -61,8 +61,23 @@ export class CharacterStorageService {
     );
     if (!valid) return null;
 
+    const usedMonsterNumbers = new Set<number>();
+    let nextMonsterNumber = 1;
     return stored.map((item) => {
-      const character = new Character(item.name, item.maxHitPoint, item.isPlayer, item.dexterityModifier ?? null);
+      let monsterNumber = typeof item.monsterNumber === 'number' &&
+        Number.isInteger(item.monsterNumber) && item.monsterNumber > 0
+        ? item.monsterNumber
+        : null;
+      if (!item.isPlayer) {
+        while (monsterNumber === null || usedMonsterNumbers.has(monsterNumber)) {
+          monsterNumber = nextMonsterNumber++;
+        }
+        usedMonsterNumbers.add(monsterNumber);
+        nextMonsterNumber = Math.max(nextMonsterNumber, monsterNumber + 1);
+      } else {
+        monsterNumber = null;
+      }
+      const character = new Character(item.name, item.maxHitPoint, item.isPlayer, item.dexterityModifier ?? null, monsterNumber);
       character.initiative = typeof item.initiative === 'number' ? item.initiative : -1;
       character.status = typeof item.status === 'string' ? item.status : '';
       character.hitPoint = item.currentHitPoint ?? item.maxHitPoint;

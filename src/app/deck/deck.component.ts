@@ -299,9 +299,10 @@ export class DeckComponent implements OnDestroy {
     return nameA.localeCompare(nameB, 'de', { sensitivity: 'base' });
   }
   protected displayCharacters() {
-    if (this.onFight()) return this.characters();
-    return this.characters()
-      .filter((character) => character.isPlayer)
+    const characters = this.characters();
+    if (this.onFight()) return characters;
+    return characters
+      .filter((character) => character.isPlayer === true)
       .sort((a, b) => this.compareNames(a.name, b.name));
   }
   protected preparationPlayers() {
@@ -311,6 +312,10 @@ export class DeckComponent implements OnDestroy {
   }
   protected preparationMonsters() {
     return this.characters().filter((character) => !character.isPlayer);
+  }
+  protected monsterNumber(character: Character) {
+    if (character.isPlayer) return null;
+    return character.monsterNumber;
   }
   protected openDisplayWindow() {
     if (typeof window === 'undefined') return;

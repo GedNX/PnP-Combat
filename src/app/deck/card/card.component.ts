@@ -20,6 +20,7 @@ import { LucideX } from '@lucide/angular';
 })
 export class CardComponent {
   character = input.required<Character>();
+  monsterNumber = input<number | null>(null);
   revision = input.required<number>();
   changed = output<void>();
   protected confirmDelete = signal(false);

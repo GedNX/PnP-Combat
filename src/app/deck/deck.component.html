@@ -16,7 +16,9 @@
           [class.monster]="!character.isPlayer"
           [class.defeated]="character.hitPoint === 0"
         >
-          {{ character.name }}
+          {{ character.name }}@if (monsterNumber(character) !== null) {
+            <small class="monster-number">#{{ monsterNumber(character) }}</small>
+          }
         </div>
       } @empty {
         <p class="empty">Keine Spielerfiguren vorhanden.</p>
@@ -287,6 +289,7 @@
           @for (character of characters(); track character.name + $index) {
             <app-card
               [character]="character"
+              [monsterNumber]="monsterNumber(character)"
               [revision]="revision()"
               (changed)="refresh()"
             />
@@ -305,6 +308,7 @@
               ) {
                 <app-card
                   [character]="character"
+                  [monsterNumber]="monsterNumber(character)"
                   [revision]="revision()"
                   (changed)="refresh()"
                 />
@@ -322,6 +326,7 @@
               ) {
                 <app-card
                   [character]="character"
+                  [monsterNumber]="monsterNumber(character)"
                   [revision]="revision()"
                   (changed)="refresh()"
                 />

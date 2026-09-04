@@ -59,6 +59,8 @@ export class CharacterService {
   }
 
   addCharacter(character: Character): void {
+    if (!character.isPlayer && character.monsterNumber === null)
+      character.monsterNumber = this.nextMonsterNumber();
     this.characters.push(character);
     this.library.save(character);
     this.persistCurrentState();
@@ -86,5 +88,12 @@ export class CharacterService {
 
   importLibrary(json: string, mode: LibraryImportMode): boolean {
     return this.library.import(json, mode);
+  }
+
+  private nextMonsterNumber(): number {
+    const numbers = this.characters
+      .filter((character) => !character.isPlayer && character.monsterNumber !== null)
+      .map((character) => character.monsterNumber as number);
+    return numbers.length === 0 ? 1 : Math.max(...numbers) + 1;
   }
 }

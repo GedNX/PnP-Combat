@@ -6,6 +6,8 @@ export class CombatService {
   private onCombat = typeof localStorage !== 'undefined' && localStorage.getItem(this.combatStorageKey) === 'true';
 
   isOnCombat(): boolean {
+    if (typeof localStorage !== 'undefined')
+      return localStorage.getItem(this.combatStorageKey) === 'true';
     return this.onCombat;
   }
 
