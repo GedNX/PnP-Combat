@@ -68,11 +68,19 @@
         />
         <input
           #hitPoint
-          [placeholder]="participantType() === 'monster' ? 'Max. TP (erforderlich)' : 'Max. TP (optional)'"
+          [placeholder]="
+            participantType() === 'monster'
+              ? 'Max. TP (erforderlich)'
+              : 'Max. TP (optional)'
+          "
           type="number"
           min="0"
           [required]="participantType() === 'monster'"
-          [attr.aria-label]="participantType() === 'monster' ? 'Max. TP (erforderlich)' : 'Max. TP (optional)'"
+          [attr.aria-label]="
+            participantType() === 'monster'
+              ? 'Max. TP (erforderlich)'
+              : 'Max. TP (optional)'
+          "
           (input)="updateMaxHitPointState(hitPoint.value)"
         />
         <button
@@ -89,10 +97,15 @@
           Hinzufügen
         </button>
       </div>
-      @if (playerNameConflict() === 'participant') {
-        <p class="duplicate-hint">Diese Spielerfigur wurde bereits als Teilnehmer hinzugefügt.</p>
-      } @else if (playerNameConflict() === 'library') {
-        <p class="duplicate-hint">Diese Spielerfigur liegt bereits in der Bibliothek. Verwende „Aus Bibliothek hinzufügen“.</p>
+      @if (playerNameConflict() === "participant") {
+        <p class="duplicate-hint">
+          Diese Spielerfigur wurde bereits als Teilnehmer hinzugefügt.
+        </p>
+      } @else if (playerNameConflict() === "library") {
+        <p class="duplicate-hint">
+          Diese Spielerfigur liegt bereits in der Bibliothek. Verwende „Aus
+          Bibliothek hinzufügen“.
+        </p>
       }
       <div class="saved-library">
         <span class="library-label">Aus Bibliothek hinzufügen</span
@@ -143,20 +156,34 @@
           </div>
         }
       </div>
-      <section class="library-section">
-        <h3>Bibliothek</h3>
-        <p class="muted">Teilnehmerdaten exportieren oder importieren.</p>
-        <div class="library-actions">
-          <div>
-            <button class="library-action" (click)="exportLibrary()">
-              <svg lucideUpload [size]="16" aria-hidden="true"></svg
-              >Exportieren</button
-            ><button class="library-action" (click)="openImport()">
-              <svg lucideDownload [size]="16" aria-hidden="true"></svg
-              >Importieren
-            </button>
+      <section class="library-panel">
+        <button
+          class="library-panel-toggle"
+          (click)="toggleLibraryPanel()"
+          [attr.aria-expanded]="libraryExpanded()"
+          aria-controls="library-content"
+        >
+          <span>Bibliothek</span>
+          <svg lucideChevronDown [size]="16" aria-hidden="true"></svg>
+        </button>
+        @if (libraryExpanded()) {
+          <div id="library-content" class="library-content">
+            <section class="library-section">
+              <p class="muted">Teilnehmerdaten exportieren oder importieren.</p>
+              <div class="library-actions">
+                <div>
+                  <button class="library-action" (click)="exportLibrary()">
+                    <svg lucideUpload [size]="16" aria-hidden="true"></svg
+                    >Exportieren</button
+                  ><button class="library-action" (click)="openImport()">
+                    <svg lucideDownload [size]="16" aria-hidden="true"></svg
+                    >Importieren
+                  </button>
+                </div>
+              </div>
+            </section>
           </div>
-        </div>
+        }
       </section>
     </section>
   }
@@ -244,7 +271,10 @@
     <div class="import-dialog" role="dialog" aria-modal="true">
       <p class="eyebrow">BIBLIOTHEK IMPORTIEREN</p>
       <h2>JSON oder YAML einfügen</h2>
-      <p class="import-help">Füge hier den zuvor exportierten Text ein. Das Format wird automatisch erkannt.</p>
+      <p class="import-help">
+        Füge hier den zuvor exportierten Text ein. Das Format wird automatisch
+        erkannt.
+      </p>
       <textarea
         class="json-text"
         rows="10"
@@ -253,9 +283,7 @@
         (input)="importJson.set($any($event.target).value)"
       ></textarea>
       @if (importError()) {
-        <p class="import-error">
-          Die Daten sind ungültig oder unvollständig.
-        </p>
+        <p class="import-error">Die Daten sind ungültig oder unvollständig.</p>
       }
       <div class="import-options">
         <button (click)="confirmImport('add')">
