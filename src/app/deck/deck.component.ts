@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  OnDestroy,
   signal,
 } from '@angular/core';
 import { Character } from '../model/character.model';
@@ -13,6 +14,7 @@ import {
   LucideArrowRight,
   LucideChevronDown,
   LucideDownload,
+  LucideExternalLink,
   LucideSword,
   LucideUpload,
   LucideUserRound,
@@ -25,6 +27,7 @@ import {
     LucideArrowRight,
     LucideChevronDown,
     LucideDownload,
+    LucideExternalLink,
     LucideSword,
     LucideUpload,
     LucideUserRound,
@@ -33,21 +36,39 @@ import {
   styleUrls: ['./deck.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DeckComponent {
+export class DeckComponent implements OnDestroy {
   protected characterService = inject(CharacterService);
   protected combatService = inject(CombatService);
   protected characters = signal<Character[]>([]);
   protected revision = signal(0);
   protected onFight = signal(this.combatService.isOnCombat());
+  protected displayMode = signal(
+    typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).has('display'),
+  );
   protected savedMonsters = signal(this.characterService.savedMonsters);
   protected savedPlayers = signal(this.characterService.savedPlayers);
 
+  private readonly storageListener = () => {
+    setTimeout(() => {
+      this.characterService.reloadCurrentState();
+      this.onFight.set(this.combatService.isOnCombat());
+      this.refresh(false);
+    });
+  };
+
   constructor() {
-    this.refresh();
+    this.refresh(!this.displayMode());
+    if (this.displayMode())
+      window.addEventListener('storage', this.storageListener);
   }
-  protected refresh() {
+  ngOnDestroy() {
+    if (this.displayMode())
+      window.removeEventListener('storage', this.storageListener);
+  }
+  protected refresh(persist = true) {
     this.characters.set([...this.characterService.characters]);
-    this.characterService.persistCurrentState();
+    if (persist) this.characterService.persistCurrentState();
     this.revision.update((value) => value + 1);
     this.savedMonsters.set([...this.characterService.savedMonsters]);
     this.savedPlayers.set([...this.characterService.savedPlayers]);
@@ -114,7 +135,9 @@ export class DeckComponent {
   protected libraryOpen = signal(false);
   protected librarySearch = signal('');
   protected librarySort = signal<'name' | 'hitPoints'>('name');
-  protected librarySortDirections = signal<Record<'name' | 'hitPoints', 'asc' | 'desc'>>({
+  protected librarySortDirections = signal<
+    Record<'name' | 'hitPoints', 'asc' | 'desc'>
+  >({
     name: 'asc',
     hitPoints: 'asc',
   });
@@ -214,13 +237,27 @@ export class DeckComponent {
     const search = this.librarySearch().trim().toLowerCase();
     return this.savedMonsters()
       .filter((monster) => monster.name.toLowerCase().includes(search))
-      .sort((a, b) => this.compareLibraryEntries(a.name, a.maxHitPoint, b.name, b.maxHitPoint));
+      .sort((a, b) =>
+        this.compareLibraryEntries(
+          a.name,
+          a.maxHitPoint,
+          b.name,
+          b.maxHitPoint,
+        ),
+      );
   }
   protected filteredSavedPlayers() {
     const search = this.librarySearch().trim().toLowerCase();
     return this.availableSavedPlayers()
       .filter((player) => player.name.toLowerCase().includes(search))
-      .sort((a, b) => this.compareLibraryEntries(a.name, a.maxHitPoint, b.name, b.maxHitPoint));
+      .sort((a, b) =>
+        this.compareLibraryEntries(
+          a.name,
+          a.maxHitPoint,
+          b.name,
+          b.maxHitPoint,
+        ),
+      );
   }
   protected setLibrarySort(sort: 'name' | 'hitPoints') {
     if (this.librarySort() === sort) {
@@ -235,19 +272,45 @@ export class DeckComponent {
   protected librarySortDirection(sort: 'name' | 'hitPoints') {
     return this.librarySortDirections()[sort];
   }
-  private compareLibraryEntries(nameA: string, hitPointsA: number | null, nameB: string, hitPointsB: number | null) {
+  private compareLibraryEntries(
+    nameA: string,
+    hitPointsA: number | null,
+    nameB: string,
+    hitPointsB: number | null,
+  ) {
     let result: number;
     if (this.librarySort() === 'hitPoints') {
-      if (hitPointsA === null) result = hitPointsB === null ? this.compareNames(nameA, nameB) : 1;
+      if (hitPointsA === null)
+        result = hitPointsB === null ? this.compareNames(nameA, nameB) : 1;
       else if (hitPointsB === null) result = -1;
-      else result = hitPointsA !== hitPointsB ? hitPointsA - hitPointsB : this.compareNames(nameA, nameB);
+      else
+        result =
+          hitPointsA !== hitPointsB
+            ? hitPointsA - hitPointsB
+            : this.compareNames(nameA, nameB);
     } else {
       result = this.compareNames(nameA, nameB);
     }
-    return this.librarySortDirections()[this.librarySort()] === 'asc' ? result : -result;
+    return this.librarySortDirections()[this.librarySort()] === 'asc'
+      ? result
+      : -result;
   }
   private compareNames(nameA: string, nameB: string) {
     return nameA.localeCompare(nameB, 'de', { sensitivity: 'base' });
+  }
+  protected displayCharacters() {
+    if (this.onFight()) return this.characters();
+    return this.characters()
+      .filter((character) => character.isPlayer)
+      .sort((a, b) => this.compareNames(a.name, b.name));
+  }
+  protected openDisplayWindow() {
+    if (typeof window === 'undefined') return;
+    window.open(
+      `${window.location.href.split('?')[0]}?display=1`,
+      'pnp-combat-display',
+      'popup,width=420,height=720',
+    );
   }
 
   protected readonly Number = Number;

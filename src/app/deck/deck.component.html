@@ -1,328 +1,389 @@
-<main class="battle-shell">
-  <header class="hero">
-    <div>
-      <p class="eyebrow">DUNGEON MASTER · KAMPFPLANER</p>
-      <h1>PnP Combat</h1>
-      <p class="subtitle">
-        Kampf vorbereiten, Initiative festlegen und den Überblick behalten.
-      </p>
-    </div>
-    <span class="status" [class.active]="onFight()">{{
-      onFight() ? "KAMPF LÄUFT" : "VORBEREITUNG"
-    }}</span>
-  </header>
-  @if (!onFight()) {
-    <section class="setup panel">
+@if (displayMode()) {
+  <main class="display-shell">
+    <header class="display-header">
       <div>
-        <h2>Teilnehmer hinzufügen</h2>
-        <p class="muted">
-          Lege zuerst alle Kreaturen und ihre Trefferpunkte fest.
+        <p class="eyebrow">PNP COMBAT</p>
+        <h1>{{ onFight() ? "Initiativereihenfolge" : "Spielerfiguren" }}</h1>
+      </div>
+      <span class="status" [class.active]="onFight()">{{
+        onFight() ? "KAMPF LÄUFT" : "VORBEREITUNG"
+      }}</span>
+    </header>
+    <section class="display-list" aria-live="polite">
+      @for (character of displayCharacters(); track character.name + $index) {
+        <div
+          class="display-character"
+          [class.monster]="!character.isPlayer"
+          [class.defeated]="character.hitPoint === 0"
+        >
+          {{ character.name }}
+        </div>
+      } @empty {
+        <p class="empty">Keine Spielerfiguren vorhanden.</p>
+      }
+    </section>
+  </main>
+} @else {
+  <main class="battle-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">DUNGEON MASTER · KAMPFPLANER</p>
+        <h1>PnP Combat</h1>
+        <p class="subtitle">
+          Kampf vorbereiten, Initiative festlegen und den Überblick behalten.
         </p>
       </div>
-      <div class="add-form">
-        <div class="type-dropdown">
+      <span class="status" [class.active]="onFight()">{{
+        onFight() ? "KAMPF LÄUFT" : "VORBEREITUNG"
+      }}</span>
+      <button
+        class="display-window-button"
+        (click)="openDisplayWindow()"
+        title="Zusatzfenster öffnen"
+      >
+        <svg lucideExternalLink [size]="16" aria-hidden="true"></svg>
+        Zusatzfenster
+      </button>
+    </header>
+    @if (!onFight()) {
+      <section class="setup panel">
+        <div>
+          <h2>Teilnehmer hinzufügen</h2>
+          <p class="muted">
+            Lege zuerst alle Kreaturen und ihre Trefferpunkte fest.
+          </p>
+        </div>
+        <div class="add-form">
+          <div class="type-dropdown">
+            <button
+              class="type-trigger"
+              (click)="toggleType()"
+              [attr.aria-expanded]="typeOpen()"
+              aria-haspopup="listbox"
+            >
+              {{ participantType() === "monster" ? "Monster" : "Spielerfigur" }}
+              <svg lucideChevronDown [size]="16" aria-hidden="true"></svg>
+            </button>
+            @if (typeOpen()) {
+              <div class="type-backdrop" (click)="typeOpen.set(false)"></div>
+              <div class="type-menu" role="listbox">
+                <button
+                  [class.selected]="participantType() === 'monster'"
+                  (click)="chooseType('monster')"
+                >
+                  <svg lucideSword [size]="17" aria-hidden="true"></svg
+                  >Monster</button
+                ><button
+                  [class.selected]="participantType() === 'player'"
+                  (click)="chooseType('player')"
+                >
+                  <svg lucideUserRound [size]="17" aria-hidden="true"></svg
+                  >Spielerfigur
+                </button>
+              </div>
+            }
+          </div>
+          <input
+            #name
+            placeholder="Name (erforderlich)"
+            type="text"
+            required
+            [attr.aria-label]="'Name (erforderlich)'"
+            [class.existing-name]="playerNameConflict() !== null"
+            [attr.aria-invalid]="playerNameConflict() !== null"
+            (input)="updatePlayerNameState(name.value)"
+            (keydown.enter)="
+              createCharacter(
+                name.value,
+                hitPoint.value,
+                participantType() === 'player'
+              )
+            "
+          />
+          <input
+            #hitPoint
+            [placeholder]="
+              participantType() === 'monster'
+                ? 'Max. TP (erforderlich)'
+                : 'Max. TP (optional)'
+            "
+            type="number"
+            min="0"
+            [required]="participantType() === 'monster'"
+            [attr.aria-label]="
+              participantType() === 'monster'
+                ? 'Max. TP (erforderlich)'
+                : 'Max. TP (optional)'
+            "
+            (input)="updateMaxHitPointState(hitPoint.value)"
+          />
           <button
-            class="type-trigger"
-            (click)="toggleType()"
-            [attr.aria-expanded]="typeOpen()"
+            class="btn btn-primary"
+            [disabled]="!canAddCharacter()"
+            (click)="
+              createCharacter(
+                name.value,
+                hitPoint.value,
+                participantType() === 'player'
+              )
+            "
+          >
+            Hinzufügen
+          </button>
+        </div>
+        @if (playerNameConflict() === "participant") {
+          <p class="duplicate-hint">
+            Diese Spielerfigur wurde bereits als Teilnehmer hinzugefügt.
+          </p>
+        } @else if (playerNameConflict() === "library") {
+          <p class="duplicate-hint">
+            Diese Spielerfigur liegt bereits in der Bibliothek. Verwende „Aus
+            Bibliothek hinzufügen“.
+          </p>
+        }
+        <div class="saved-library">
+          <span class="library-label">Aus Bibliothek hinzufügen</span
+          ><button
+            class="library-trigger"
+            (click)="toggleLibrary()"
+            [attr.aria-expanded]="libraryOpen()"
             aria-haspopup="listbox"
           >
-            {{ participantType() === "monster" ? "Monster" : "Spielerfigur" }}
+            Teilnehmer auswählen …
             <svg lucideChevronDown [size]="16" aria-hidden="true"></svg>
           </button>
-          @if (typeOpen()) {
-            <div class="type-backdrop" (click)="typeOpen.set(false)"></div>
-            <div class="type-menu" role="listbox">
-              <button
-                [class.selected]="participantType() === 'monster'"
-                (click)="chooseType('monster')"
+          @if (libraryOpen()) {
+            <div class="library-backdrop" (click)="closeLibrary()"></div>
+            <div class="library-menu" role="listbox">
+              <input
+                class="library-search"
+                type="search"
+                placeholder="Namen suchen …"
+                aria-label="Teilnehmer suchen"
+                [value]="librarySearch()"
+                (input)="librarySearch.set($any($event.target).value)"
+              />
+              <div
+                class="library-sort"
+                role="group"
+                aria-label="Teilnehmer sortieren"
               >
-                <svg lucideSword [size]="17" aria-hidden="true"></svg
-                >Monster</button
-              ><button
-                [class.selected]="participantType() === 'player'"
-                (click)="chooseType('player')"
-              >
-                <svg lucideUserRound [size]="17" aria-hidden="true"></svg
-                >Spielerfigur
-              </button>
+                <span>Sortieren:</span>
+                <button
+                  [class.selected]="librarySort() === 'name'"
+                  (click)="setLibrarySort('name')"
+                >
+                  Name
+                  {{ librarySortDirection("name") === "asc" ? "A–Z" : "Z–A" }}
+                </button>
+                <button
+                  [class.selected]="librarySort() === 'hitPoints'"
+                  (click)="setLibrarySort('hitPoints')"
+                >
+                  TP
+                  {{
+                    librarySortDirection("hitPoints") === "asc"
+                      ? "aufsteigend"
+                      : "absteigend"
+                  }}
+                </button>
+              </div>
+              <section>
+                <h3>Monster</h3>
+                @for (monster of filteredSavedMonsters(); track monster.name) {
+                  <button
+                    class="library-item"
+                    (click)="chooseSavedParticipant('monster', monster.name)"
+                  >
+                    <span>{{ monster.name }}</span
+                    ><small>{{ monster.maxHitPoint }} TP</small>
+                  </button>
+                }
+                @if (!filteredSavedMonsters().length) {
+                  <p class="library-empty">
+                    {{
+                      librarySearch().trim()
+                        ? "Keine Treffer."
+                        : "Keine Monster gespeichert."
+                    }}
+                  </p>
+                }
+              </section>
+              <section>
+                <h3>Spielerfiguren</h3>
+                @for (player of filteredSavedPlayers(); track player.name) {
+                  <button
+                    class="library-item"
+                    (click)="chooseSavedParticipant('player', player.name)"
+                  >
+                    <span>{{ player.name }}</span>
+                    @if (player.maxHitPoint !== null) {
+                      <small>{{ player.maxHitPoint }} TP</small>
+                    }
+                  </button>
+                }
+                @if (!filteredSavedPlayers().length) {
+                  <p class="library-empty">
+                    {{
+                      librarySearch().trim()
+                        ? "Keine Treffer."
+                        : "Keine verfügbaren Spielerfiguren."
+                    }}
+                  </p>
+                }
+              </section>
             </div>
           }
         </div>
-        <input
-          #name
-          placeholder="Name (erforderlich)"
-          type="text"
-          required
-          [attr.aria-label]="'Name (erforderlich)'"
-          [class.existing-name]="playerNameConflict() !== null"
-          [attr.aria-invalid]="playerNameConflict() !== null"
-          (input)="updatePlayerNameState(name.value)"
-          (keydown.enter)="
-            createCharacter(
-              name.value,
-              hitPoint.value,
-              participantType() === 'player'
-            )
-          "
-        />
-        <input
-          #hitPoint
-          [placeholder]="
-            participantType() === 'monster'
-              ? 'Max. TP (erforderlich)'
-              : 'Max. TP (optional)'
-          "
-          type="number"
-          min="0"
-          [required]="participantType() === 'monster'"
-          [attr.aria-label]="
-            participantType() === 'monster'
-              ? 'Max. TP (erforderlich)'
-              : 'Max. TP (optional)'
-          "
-          (input)="updateMaxHitPointState(hitPoint.value)"
-        />
-        <button
-          class="btn btn-primary"
-          [disabled]="!canAddCharacter()"
-          (click)="
-            createCharacter(
-              name.value,
-              hitPoint.value,
-              participantType() === 'player'
-            )
-          "
-        >
-          Hinzufügen
-        </button>
-      </div>
-      @if (playerNameConflict() === "participant") {
-        <p class="duplicate-hint">
-          Diese Spielerfigur wurde bereits als Teilnehmer hinzugefügt.
-        </p>
-      } @else if (playerNameConflict() === "library") {
-        <p class="duplicate-hint">
-          Diese Spielerfigur liegt bereits in der Bibliothek. Verwende „Aus
-          Bibliothek hinzufügen“.
-        </p>
-      }
-      <div class="saved-library">
-        <span class="library-label">Aus Bibliothek hinzufügen</span
-        ><button
-          class="library-trigger"
-          (click)="toggleLibrary()"
-          [attr.aria-expanded]="libraryOpen()"
-          aria-haspopup="listbox"
-        >
-          Teilnehmer auswählen …
-          <svg lucideChevronDown [size]="16" aria-hidden="true"></svg>
-        </button>
-        @if (libraryOpen()) {
-          <div class="library-backdrop" (click)="closeLibrary()"></div>
-          <div class="library-menu" role="listbox">
-            <input
-              class="library-search"
-              type="search"
-              placeholder="Namen suchen …"
-              aria-label="Teilnehmer suchen"
-              [value]="librarySearch()"
-              (input)="librarySearch.set($any($event.target).value)"
-            />
-            <div class="library-sort" role="group" aria-label="Teilnehmer sortieren">
-              <span>Sortieren:</span>
-              <button
-                [class.selected]="librarySort() === 'name'"
-                (click)="setLibrarySort('name')"
-              >
-                Name {{ librarySortDirection('name') === 'asc' ? 'A–Z' : 'Z–A' }}
-              </button>
-              <button
-                [class.selected]="librarySort() === 'hitPoints'"
-                (click)="setLibrarySort('hitPoints')"
-              >
-                TP {{ librarySortDirection('hitPoints') === 'asc' ? 'aufsteigend' : 'absteigend' }}
-              </button>
-            </div>
-            <section>
-              <h3>Monster</h3>
-              @for (monster of filteredSavedMonsters(); track monster.name) {
-                <button
-                  class="library-item"
-                  (click)="chooseSavedParticipant('monster', monster.name)"
-                >
-                  <span>{{ monster.name }}</span
-                  ><small>{{ monster.maxHitPoint }} TP</small>
-                </button>
-              }
-              @if (!filteredSavedMonsters().length) {
-                <p class="library-empty">{{ librarySearch().trim() ? "Keine Treffer." : "Keine Monster gespeichert." }}</p>
-              }
-            </section>
-            <section>
-              <h3>Spielerfiguren</h3>
-              @for (player of filteredSavedPlayers(); track player.name) {
-                <button
-                  class="library-item"
-                  (click)="chooseSavedParticipant('player', player.name)"
-                >
-                  <span>{{ player.name }}</span>
-                  @if (player.maxHitPoint !== null) {
-                    <small>{{ player.maxHitPoint }} TP</small>
-                  }
-                </button>
-              }
-              @if (!filteredSavedPlayers().length) {
-                <p class="library-empty">{{ librarySearch().trim() ? "Keine Treffer." : "Keine verfügbaren Spielerfiguren." }}</p>
-              }
-            </section>
-          </div>
-        }
-      </div>
-      <section class="library-panel">
-        <button
-          class="library-panel-toggle"
-          (click)="toggleLibraryPanel()"
-          [attr.aria-expanded]="libraryExpanded()"
-          aria-controls="library-content"
-        >
-          <span>Bibliothek</span>
-          <svg lucideChevronDown [size]="16" aria-hidden="true"></svg>
-        </button>
-        @if (libraryExpanded()) {
-          <div id="library-content" class="library-content">
-            <section class="library-section">
-              <p class="muted">Teilnehmerdaten exportieren oder importieren.</p>
-              <div class="library-actions">
-                <div>
-                  <button class="library-action" (click)="exportLibrary()">
-                    <svg lucideUpload [size]="16" aria-hidden="true"></svg
-                    >Exportieren</button
-                  ><button class="library-action" (click)="openImport()">
-                    <svg lucideDownload [size]="16" aria-hidden="true"></svg
-                    >Importieren
-                  </button>
+        <section class="library-panel">
+          <button
+            class="library-panel-toggle"
+            (click)="toggleLibraryPanel()"
+            [attr.aria-expanded]="libraryExpanded()"
+            aria-controls="library-content"
+          >
+            <span>Bibliothek</span>
+            <svg lucideChevronDown [size]="16" aria-hidden="true"></svg>
+          </button>
+          @if (libraryExpanded()) {
+            <div id="library-content" class="library-content">
+              <section class="library-section">
+                <p class="muted">
+                  Teilnehmerdaten exportieren oder importieren.
+                </p>
+                <div class="library-actions">
+                  <div>
+                    <button class="library-action" (click)="exportLibrary()">
+                      <svg lucideUpload [size]="16" aria-hidden="true"></svg
+                      >Exportieren</button
+                    ><button class="library-action" (click)="openImport()">
+                      <svg lucideDownload [size]="16" aria-hidden="true"></svg
+                      >Importieren
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </section>
-          </div>
-        }
+              </section>
+            </div>
+          }
+        </section>
       </section>
-    </section>
-  }
-  <section class="participants">
-    <div class="section-heading">
-      <div>
-        <h2>{{ onFight() ? "Initiativereihenfolge" : "Teilnehmer" }}</h2>
-        <p class="muted">
-          {{
-            onFight()
-              ? "Schaden wird direkt von den aktuellen TP abgezogen."
-              : "Initiative und Geschicklichkeits-Modifikator bestimmen die Reihenfolge."
-          }}
-        </p>
-      </div>
-      <span class="count">{{ characters().length }} Figuren</span>
-    </div>
-    <div class="cards" [class.in-combat]="onFight()">
-      @for (character of characters(); track character.name + $index) {
-        <app-card
-          [character]="character"
-          [revision]="revision()"
-          (changed)="refresh()"
-        />
-      } @empty {
-        <p class="empty">Noch keine Teilnehmer angelegt.</p>
-      }
-    </div>
-  </section>
-  <footer class="actions">
-    @if (onFight()) {
-      <button class="btn btn-outline-secondary" (click)="fightEnd()">
-        Kampf beenden
-      </button>
-    } @else {
-      <button
-        class="btn btn-primary btn-start"
-        [disabled]="!canStartFight()"
-        (click)="fight()"
-      >
-        Kampf beginnen
-        <svg lucideArrowRight [size]="17" aria-hidden="true"></svg></button
-      ><small>Für alle Teilnehmer muss eine Initiative gesetzt sein.</small>
     }
-  </footer>
-</main>
-@if (exportOpen()) {
-  <div class="import-backdrop">
-    <div class="import-dialog" role="dialog" aria-modal="true">
-      <p class="eyebrow">BIBLIOTHEK EXPORTIEREN</p>
-      <h2>{{ exportFormat() === "yaml" ? "YAML" : "JSON" }} kopieren</h2>
-      <p class="import-help">
-        Kopiere den Inhalt und speichere ihn an einem sicheren Ort.
-      </p>
-      <div class="format-switch" role="group" aria-label="Exportformat">
-        <button
-          [class.selected]="exportFormat() === 'yaml'"
-          (click)="setExportFormat('yaml')"
-        >
-          YAML
-        </button>
-        <button
-          [class.selected]="exportFormat() === 'json'"
-          (click)="setExportFormat('json')"
-        >
-          JSON
-        </button>
+    <section class="participants">
+      <div class="section-heading">
+        <div>
+          <h2>{{ onFight() ? "Initiativereihenfolge" : "Teilnehmer" }}</h2>
+          <p class="muted">
+            {{
+              onFight()
+                ? "Schaden wird direkt von den aktuellen TP abgezogen."
+                : "Initiative und Geschicklichkeits-Modifikator bestimmen die Reihenfolge."
+            }}
+          </p>
+        </div>
+        <span class="count">{{ characters().length }} Figuren</span>
       </div>
-      <textarea
-        class="json-text"
-        rows="12"
-        readonly
-        [value]="importJson()"
-      ></textarea>
-      <div class="dialog-actions">
-        <button class="library-action" (click)="exportOpen.set(false)">
-          Schließen
-        </button>
+      <div class="cards" [class.in-combat]="onFight()">
+        @for (character of characters(); track character.name + $index) {
+          <app-card
+            [character]="character"
+            [revision]="revision()"
+            (changed)="refresh()"
+          />
+        } @empty {
+          <p class="empty">Noch keine Teilnehmer angelegt.</p>
+        }
       </div>
-    </div>
-  </div>
-}
-@if (importOpen()) {
-  <div class="import-backdrop">
-    <div class="import-dialog" role="dialog" aria-modal="true">
-      <p class="eyebrow">BIBLIOTHEK IMPORTIEREN</p>
-      <h2>JSON oder YAML einfügen</h2>
-      <p class="import-help">
-        Füge hier den zuvor exportierten Text ein. Das Format wird automatisch
-        erkannt.
-      </p>
-      <textarea
-        class="json-text"
-        rows="10"
-        placeholder="JSON hier einfügen …"
-        [value]="importJson()"
-        (input)="importJson.set($any($event.target).value)"
-      ></textarea>
-      @if (importError()) {
-        <p class="import-error">Die Daten sind ungültig oder unvollständig.</p>
+    </section>
+    <footer class="actions">
+      @if (onFight()) {
+        <button class="btn btn-outline-secondary" (click)="fightEnd()">
+          Kampf beenden
+        </button>
+      } @else {
+        <button
+          class="btn btn-primary btn-start"
+          [disabled]="!canStartFight()"
+          (click)="fight()"
+        >
+          Kampf beginnen
+          <svg lucideArrowRight [size]="17" aria-hidden="true"></svg></button
+        ><small>Für alle Teilnehmer muss eine Initiative gesetzt sein.</small>
       }
-      <div class="import-options">
-        <button (click)="confirmImport('add')">
-          <strong>Hinzufügen</strong
-          ><small>Bestehende Einträge behalten</small></button
-        ><button (click)="confirmImport('overwrite')">
-          <strong>Hinzufügen und überschreiben</strong
-          ><small>Gleiche Namen werden aktualisiert</small></button
-        ><button (click)="confirmImport('replace')">
-          <strong>Ersetzen</strong
-          ><small>Alle bisherigen Bibliotheksdaten löschen</small>
+    </footer>
+  </main>
+  @if (exportOpen()) {
+    <div class="import-backdrop">
+      <div class="import-dialog" role="dialog" aria-modal="true">
+        <p class="eyebrow">BIBLIOTHEK EXPORTIEREN</p>
+        <h2>{{ exportFormat() === "yaml" ? "YAML" : "JSON" }} kopieren</h2>
+        <p class="import-help">
+          Kopiere den Inhalt und speichere ihn an einem sicheren Ort.
+        </p>
+        <div class="format-switch" role="group" aria-label="Exportformat">
+          <button
+            [class.selected]="exportFormat() === 'yaml'"
+            (click)="setExportFormat('yaml')"
+          >
+            YAML
+          </button>
+          <button
+            [class.selected]="exportFormat() === 'json'"
+            (click)="setExportFormat('json')"
+          >
+            JSON
+          </button>
+        </div>
+        <textarea
+          class="json-text"
+          rows="12"
+          readonly
+          [value]="importJson()"
+        ></textarea>
+        <div class="dialog-actions">
+          <button class="library-action" (click)="exportOpen.set(false)">
+            Schließen
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+  @if (importOpen()) {
+    <div class="import-backdrop">
+      <div class="import-dialog" role="dialog" aria-modal="true">
+        <p class="eyebrow">BIBLIOTHEK IMPORTIEREN</p>
+        <h2>JSON oder YAML einfügen</h2>
+        <p class="import-help">
+          Füge hier den zuvor exportierten Text ein. Das Format wird automatisch
+          erkannt.
+        </p>
+        <textarea
+          class="json-text"
+          rows="10"
+          placeholder="JSON hier einfügen …"
+          [value]="importJson()"
+          (input)="importJson.set($any($event.target).value)"
+        ></textarea>
+        @if (importError()) {
+          <p class="import-error">
+            Die Daten sind ungültig oder unvollständig.
+          </p>
+        }
+        <div class="import-options">
+          <button (click)="confirmImport('add')">
+            <strong>Hinzufügen</strong
+            ><small>Bestehende Einträge behalten</small></button
+          ><button (click)="confirmImport('overwrite')">
+            <strong>Hinzufügen und überschreiben</strong
+            ><small>Gleiche Namen werden aktualisiert</small></button
+          ><button (click)="confirmImport('replace')">
+            <strong>Ersetzen</strong
+            ><small>Alle bisherigen Bibliotheksdaten löschen</small>
+          </button>
+        </div>
+        <button class="import-cancel" (click)="importOpen.set(false)">
+          Abbrechen
         </button>
       </div>
-      <button class="import-cancel" (click)="importOpen.set(false)">
-        Abbrechen
-      </button>
     </div>
-  </div>
+  }
 }

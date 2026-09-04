@@ -54,6 +54,10 @@ export class CharacterService {
     else this.storage.savePreparation(this.characters);
   }
 
+  reloadCurrentState(): void {
+    this.characters = this.storage.loadCurrentCharacters();
+  }
+
   addCharacter(character: Character): void {
     this.characters.push(character);
     this.library.save(character);
