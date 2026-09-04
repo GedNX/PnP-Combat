@@ -39,6 +39,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeckComponent implements OnDestroy {
+  private readonly displayRotationStorageKey = 'pnp-combat-display-rotation';
   protected characterService = inject(CharacterService);
   protected combatService = inject(CombatService);
   protected characters = signal<Character[]>([]);
@@ -48,7 +49,7 @@ export class DeckComponent implements OnDestroy {
     typeof window !== 'undefined' &&
       new URLSearchParams(window.location.search).has('display'),
   );
-  protected displayRotation = signal<0 | 90 | 180 | 270>(0);
+  protected displayRotation = signal<0 | 90 | 180 | 270>(this.loadDisplayRotation());
   protected savedMonsters = signal(this.characterService.savedMonsters);
   protected savedPlayers = signal(this.characterService.savedPlayers);
 
@@ -330,7 +331,18 @@ export class DeckComponent implements OnDestroy {
   }
 
   protected rotateDisplay() {
-    this.displayRotation.update((rotation) => ((rotation + 90) % 360) as 0 | 90 | 180 | 270);
+    this.displayRotation.update((rotation) => {
+      const nextRotation = ((rotation + 90) % 360) as 0 | 90 | 180 | 270;
+      if (typeof localStorage !== 'undefined')
+        localStorage.setItem(this.displayRotationStorageKey, String(nextRotation));
+      return nextRotation;
+    });
+  }
+
+  private loadDisplayRotation(): 0 | 90 | 180 | 270 {
+    if (typeof localStorage === 'undefined') return 0;
+    const rotation = Number(localStorage.getItem(this.displayRotationStorageKey));
+    return rotation === 90 || rotation === 180 || rotation === 270 ? rotation : 0;
   }
 
   protected readonly Number = Number;
