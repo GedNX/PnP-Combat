@@ -20,22 +20,6 @@
         </p>
       </div>
       <div class="add-form">
-        <input
-          #name
-          placeholder="Name (z. B. Goblin)"
-          type="text"
-          [class.existing-name]="playerNameConflict() !== null"
-          [attr.aria-invalid]="playerNameConflict() !== null"
-          (input)="updatePlayerNameState(name.value)"
-          (keydown.enter)="
-            createCharacter(
-              name.value,
-              hitPoint.value,
-              participantType() === 'player'
-            )
-          "
-        />
-        <input #hitPoint placeholder="Max. TP" type="number" min="0" />
         <div class="type-dropdown">
           <button
             class="type-trigger"
@@ -65,8 +49,35 @@
             </div>
           }
         </div>
+        <input
+          #name
+          placeholder="Name (erforderlich)"
+          type="text"
+          required
+          [attr.aria-label]="'Name (erforderlich)'"
+          [class.existing-name]="playerNameConflict() !== null"
+          [attr.aria-invalid]="playerNameConflict() !== null"
+          (input)="updatePlayerNameState(name.value)"
+          (keydown.enter)="
+            createCharacter(
+              name.value,
+              hitPoint.value,
+              participantType() === 'player'
+            )
+          "
+        />
+        <input
+          #hitPoint
+          [placeholder]="participantType() === 'monster' ? 'Max. TP (erforderlich)' : 'Max. TP (optional)'"
+          type="number"
+          min="0"
+          [required]="participantType() === 'monster'"
+          [attr.aria-label]="participantType() === 'monster' ? 'Max. TP (erforderlich)' : 'Max. TP (optional)'"
+          (input)="updateMaxHitPointState(hitPoint.value)"
+        />
         <button
           class="btn btn-primary"
+          [disabled]="!canAddCharacter()"
           (click)="
             createCharacter(
               name.value,

@@ -72,6 +72,7 @@ export class DeckComponent {
   protected participantType = signal<'monster' | 'player'>('monster');
   protected playerNameConflict = signal<'participant' | 'library' | null>(null);
   private playerName = signal('');
+  private maxHitPointInput = signal('');
   protected typeOpen = signal(false);
   protected importOpen = signal(false);
   protected exportOpen = signal(false);
@@ -89,6 +90,16 @@ export class DeckComponent {
     this.playerNameConflict.set(this.participantType() === 'player'
       ? this.characterService.playerNameConflict(this.playerName())
       : null);
+  }
+  protected updateMaxHitPointState(value: string) {
+    this.maxHitPointInput.set(value);
+  }
+  protected canAddCharacter() {
+    const nameValid = this.playerName().trim().length > 0;
+    if (!nameValid) return false;
+    if (this.participantType() === 'player') return this.playerNameConflict() === null;
+    const hitPoint = Number(this.maxHitPointInput());
+    return this.maxHitPointInput().trim().length > 0 && Number.isFinite(hitPoint) && hitPoint >= 0;
   }
   protected exportLibrary() {
     this.importJson.set(this.characterService.exportLibrary(this.exportFormat()));
