@@ -15,6 +15,7 @@ import {
   LucideChevronDown,
   LucideDownload,
   LucideExternalLink,
+  LucideRotateCw,
   LucideSword,
   LucideUpload,
   LucideUserRound,
@@ -28,6 +29,7 @@ import {
     LucideChevronDown,
     LucideDownload,
     LucideExternalLink,
+    LucideRotateCw,
     LucideSword,
     LucideUpload,
     LucideUserRound,
@@ -46,6 +48,7 @@ export class DeckComponent implements OnDestroy {
     typeof window !== 'undefined' &&
       new URLSearchParams(window.location.search).has('display'),
   );
+  protected displayRotation = signal<0 | 90 | 180 | 270>(0);
   protected savedMonsters = signal(this.characterService.savedMonsters);
   protected savedPlayers = signal(this.characterService.savedPlayers);
 
@@ -324,6 +327,10 @@ export class DeckComponent implements OnDestroy {
       'pnp-combat-display',
       'popup,width=420,height=720',
     );
+  }
+
+  protected rotateDisplay() {
+    this.displayRotation.update((rotation) => ((rotation + 90) % 360) as 0 | 90 | 180 | 270);
   }
 
   protected readonly Number = Number;

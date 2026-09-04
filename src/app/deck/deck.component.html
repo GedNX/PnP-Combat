@@ -1,5 +1,10 @@
 @if (displayMode()) {
-  <main class="display-shell">
+  <main
+    class="display-shell"
+    [class.rotated-90]="displayRotation() === 90"
+    [class.rotated-180]="displayRotation() === 180"
+    [class.rotated-270]="displayRotation() === 270"
+  >
     <header class="display-header">
       <div>
         <p class="eyebrow">PNP COMBAT</p>
@@ -8,6 +13,14 @@
       <span class="status" [class.active]="onFight()">{{
         onFight() ? "KAMPF LÄUFT" : "VORBEREITUNG"
       }}</span>
+      <button
+        class="display-window-button display-rotate-button"
+        (click)="rotateDisplay()"
+        [attr.aria-label]="'Zusatzfenster um 90 Grad drehen (aktuell ' + displayRotation() + ' Grad)'"
+        [title]="'Um 90 Grad drehen (aktuell ' + displayRotation() + '°)'"
+      >
+        <svg lucideRotateCw [size]="16" aria-hidden="true"></svg>
+      </button>
     </header>
     <section class="display-list" aria-live="polite">
       @for (character of displayCharacters(); track character.name + $index) {
