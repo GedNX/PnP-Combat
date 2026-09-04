@@ -304,6 +304,14 @@ export class DeckComponent implements OnDestroy {
       .filter((character) => character.isPlayer)
       .sort((a, b) => this.compareNames(a.name, b.name));
   }
+  protected preparationPlayers() {
+    return this.characters()
+      .filter((character) => character.isPlayer)
+      .sort((a, b) => this.compareNames(a.name, b.name));
+  }
+  protected preparationMonsters() {
+    return this.characters().filter((character) => !character.isPlayer);
+  }
   protected openDisplayWindow() {
     if (typeof window === 'undefined') return;
     window.open(

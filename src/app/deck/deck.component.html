@@ -282,17 +282,56 @@
         </div>
         <span class="count">{{ characters().length }} Figuren</span>
       </div>
-      <div class="cards" [class.in-combat]="onFight()">
-        @for (character of characters(); track character.name + $index) {
-          <app-card
-            [character]="character"
-            [revision]="revision()"
-            (changed)="refresh()"
-          />
-        } @empty {
-          <p class="empty">Noch keine Teilnehmer angelegt.</p>
-        }
-      </div>
+      @if (onFight()) {
+        <div class="cards in-combat">
+          @for (character of characters(); track character.name + $index) {
+            <app-card
+              [character]="character"
+              [revision]="revision()"
+              (changed)="refresh()"
+            />
+          } @empty {
+            <p class="empty">Noch keine Teilnehmer angelegt.</p>
+          }
+        </div>
+      } @else {
+        <div class="preparation-groups">
+          <section class="participant-group player-group">
+            <h3>Spielerfiguren</h3>
+            <div class="cards">
+              @for (
+                character of preparationPlayers();
+                track character.name + $index
+              ) {
+                <app-card
+                  [character]="character"
+                  [revision]="revision()"
+                  (changed)="refresh()"
+                />
+              } @empty {
+                <p class="group-empty">Keine Spielerfiguren hinzugefügt.</p>
+              }
+            </div>
+          </section>
+          <section class="participant-group monster-group">
+            <h3>Monster</h3>
+            <div class="cards">
+              @for (
+                character of preparationMonsters();
+                track character.name + $index
+              ) {
+                <app-card
+                  [character]="character"
+                  [revision]="revision()"
+                  (changed)="refresh()"
+                />
+              } @empty {
+                <p class="group-empty">Keine Monster hinzugefügt.</p>
+              }
+            </div>
+          </section>
+        </div>
+      }
     </section>
     <footer class="actions">
       @if (onFight()) {
