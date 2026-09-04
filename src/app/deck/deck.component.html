@@ -129,6 +129,21 @@
               [value]="librarySearch()"
               (input)="librarySearch.set($any($event.target).value)"
             />
+            <div class="library-sort" role="group" aria-label="Teilnehmer sortieren">
+              <span>Sortieren:</span>
+              <button
+                [class.selected]="librarySort() === 'name'"
+                (click)="setLibrarySort('name')"
+              >
+                Name {{ librarySortDirection('name') === 'asc' ? 'A–Z' : 'Z–A' }}
+              </button>
+              <button
+                [class.selected]="librarySort() === 'hitPoints'"
+                (click)="setLibrarySort('hitPoints')"
+              >
+                TP {{ librarySortDirection('hitPoints') === 'asc' ? 'aufsteigend' : 'absteigend' }}
+              </button>
+            </div>
             <section>
               <h3>Monster</h3>
               @for (monster of filteredSavedMonsters(); track monster.name) {

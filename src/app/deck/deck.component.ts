@@ -113,6 +113,11 @@ export class DeckComponent {
   }
   protected libraryOpen = signal(false);
   protected librarySearch = signal('');
+  protected librarySort = signal<'name' | 'hitPoints'>('name');
+  protected librarySortDirections = signal<Record<'name' | 'hitPoints', 'asc' | 'desc'>>({
+    name: 'asc',
+    hitPoints: 'asc',
+  });
   protected participantType = signal<'monster' | 'player'>('monster');
   protected playerNameConflict = signal<'participant' | 'library' | null>(null);
   private playerName = signal('');
@@ -207,11 +212,42 @@ export class DeckComponent {
   }
   protected filteredSavedMonsters() {
     const search = this.librarySearch().trim().toLowerCase();
-    return this.savedMonsters().filter((monster) => monster.name.toLowerCase().includes(search));
+    return this.savedMonsters()
+      .filter((monster) => monster.name.toLowerCase().includes(search))
+      .sort((a, b) => this.compareLibraryEntries(a.name, a.maxHitPoint, b.name, b.maxHitPoint));
   }
   protected filteredSavedPlayers() {
     const search = this.librarySearch().trim().toLowerCase();
-    return this.availableSavedPlayers().filter((player) => player.name.toLowerCase().includes(search));
+    return this.availableSavedPlayers()
+      .filter((player) => player.name.toLowerCase().includes(search))
+      .sort((a, b) => this.compareLibraryEntries(a.name, a.maxHitPoint, b.name, b.maxHitPoint));
+  }
+  protected setLibrarySort(sort: 'name' | 'hitPoints') {
+    if (this.librarySort() === sort) {
+      this.librarySortDirections.update((directions) => ({
+        ...directions,
+        [sort]: directions[sort] === 'asc' ? 'desc' : 'asc',
+      }));
+    } else {
+      this.librarySort.set(sort);
+    }
+  }
+  protected librarySortDirection(sort: 'name' | 'hitPoints') {
+    return this.librarySortDirections()[sort];
+  }
+  private compareLibraryEntries(nameA: string, hitPointsA: number | null, nameB: string, hitPointsB: number | null) {
+    let result: number;
+    if (this.librarySort() === 'hitPoints') {
+      if (hitPointsA === null) result = hitPointsB === null ? this.compareNames(nameA, nameB) : 1;
+      else if (hitPointsB === null) result = -1;
+      else result = hitPointsA !== hitPointsB ? hitPointsA - hitPointsB : this.compareNames(nameA, nameB);
+    } else {
+      result = this.compareNames(nameA, nameB);
+    }
+    return this.librarySortDirections()[this.librarySort()] === 'asc' ? result : -result;
+  }
+  private compareNames(nameA: string, nameB: string) {
+    return nameA.localeCompare(nameB, 'de', { sensitivity: 'base' });
   }
 
   protected readonly Number = Number;
