@@ -112,6 +112,7 @@ export class DeckComponent {
     }
   }
   protected libraryOpen = signal(false);
+  protected librarySearch = signal('');
   protected participantType = signal<'monster' | 'player'>('monster');
   protected playerNameConflict = signal<'participant' | 'library' | null>(null);
   private playerName = signal('');
@@ -180,12 +181,14 @@ export class DeckComponent {
   }
   protected toggleLibrary() {
     this.libraryOpen.update((open) => !open);
+    this.librarySearch.set('');
   }
   protected toggleLibraryPanel() {
     this.libraryExpanded.update((expanded) => !expanded);
   }
   protected closeLibrary() {
     this.libraryOpen.set(false);
+    this.librarySearch.set('');
   }
   protected chooseSavedParticipant(type: string, name: string) {
     if (type === 'monster') this.addSavedMonster(name);
@@ -201,6 +204,14 @@ export class DeckComponent {
             character.name.toLowerCase() === saved.name.toLowerCase(),
         ),
     );
+  }
+  protected filteredSavedMonsters() {
+    const search = this.librarySearch().trim().toLowerCase();
+    return this.savedMonsters().filter((monster) => monster.name.toLowerCase().includes(search));
+  }
+  protected filteredSavedPlayers() {
+    const search = this.librarySearch().trim().toLowerCase();
+    return this.availableSavedPlayers().filter((player) => player.name.toLowerCase().includes(search));
   }
 
   protected readonly Number = Number;

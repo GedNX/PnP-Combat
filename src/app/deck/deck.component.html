@@ -121,9 +121,17 @@
         @if (libraryOpen()) {
           <div class="library-backdrop" (click)="closeLibrary()"></div>
           <div class="library-menu" role="listbox">
+            <input
+              class="library-search"
+              type="search"
+              placeholder="Namen suchen …"
+              aria-label="Teilnehmer suchen"
+              [value]="librarySearch()"
+              (input)="librarySearch.set($any($event.target).value)"
+            />
             <section>
               <h3>Monster</h3>
-              @for (monster of savedMonsters(); track monster.name) {
+              @for (monster of filteredSavedMonsters(); track monster.name) {
                 <button
                   class="library-item"
                   (click)="chooseSavedParticipant('monster', monster.name)"
@@ -132,13 +140,13 @@
                   ><small>{{ monster.maxHitPoint }} TP</small>
                 </button>
               }
-              @if (!savedMonsters().length) {
-                <p class="library-empty">Keine Monster gespeichert.</p>
+              @if (!filteredSavedMonsters().length) {
+                <p class="library-empty">{{ librarySearch().trim() ? "Keine Treffer." : "Keine Monster gespeichert." }}</p>
               }
             </section>
             <section>
               <h3>Spielerfiguren</h3>
-              @for (player of availableSavedPlayers(); track player.name) {
+              @for (player of filteredSavedPlayers(); track player.name) {
                 <button
                   class="library-item"
                   (click)="chooseSavedParticipant('player', player.name)"
@@ -149,8 +157,8 @@
                   }
                 </button>
               }
-              @if (!availableSavedPlayers().length) {
-                <p class="library-empty">Keine verfügbaren Spielerfiguren.</p>
+              @if (!filteredSavedPlayers().length) {
+                <p class="library-empty">{{ librarySearch().trim() ? "Keine Treffer." : "Keine verfügbaren Spielerfiguren." }}</p>
               }
             </section>
           </div>
