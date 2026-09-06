@@ -5,6 +5,7 @@ import {
   OnDestroy,
   signal,
 } from '@angular/core';
+import { ThemeService } from '../shared/theme.service';
 import { Character } from '../model/character.model';
 import { CharacterService } from '../shared/character.service';
 import { CombatService } from '../shared/combat.service';
@@ -40,6 +41,7 @@ import {
 })
 export class DeckComponent implements OnDestroy {
   private readonly displayRotationStorageKey = 'pnp-combat-display-rotation';
+  protected theme = inject(ThemeService);
   protected characterService = inject(CharacterService);
   protected combatService = inject(CombatService);
   protected characters = signal<Character[]>([]);

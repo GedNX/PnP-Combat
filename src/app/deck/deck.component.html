@@ -13,14 +13,34 @@
       <span class="status" [class.active]="onFight()">{{
         onFight() ? "KAMPF LÄUFT" : "VORBEREITUNG"
       }}</span>
-      <button
-        class="display-window-button display-rotate-button"
-        (click)="rotateDisplay()"
-        [attr.aria-label]="'Zusatzfenster um 90 Grad drehen (aktuell ' + displayRotation() + ' Grad)'"
-        [title]="'Um 90 Grad drehen (aktuell ' + displayRotation() + '°)'"
-      >
-        <svg lucideRotateCwSquare [size]="16" aria-hidden="true"></svg>
-      </button>
+      <div class="header-actions">
+        <button
+          type="button"
+          class="display-window-button theme-toggle"
+          (click)="theme.toggle()"
+          [attr.aria-pressed]="theme.mode() === 'light'"
+          aria-label="Hellen Modus aktivieren"
+          [title]="
+            theme.mode() === 'dark'
+              ? 'Zum hellen Modus wechseln'
+              : 'Zum dunklen Modus wechseln'
+          "
+        >
+          {{ theme.mode() === "dark" ? "☀ Hell" : "☾ Dunkel" }}
+        </button>
+        <button
+          class="display-window-button display-rotate-button"
+          (click)="rotateDisplay()"
+          [attr.aria-label]="
+            'Zusatzfenster um 90 Grad drehen (aktuell ' +
+            displayRotation() +
+            ' Grad)'
+          "
+          [title]="'Um 90 Grad drehen (aktuell ' + displayRotation() + '°)'"
+        >
+          <svg lucideRotateCwSquare [size]="16" aria-hidden="true"></svg>
+        </button>
+      </div>
     </header>
     <section class="display-list" aria-live="polite">
       @for (character of displayCharacters(); track character.name + $index) {
@@ -29,8 +49,11 @@
           [class.monster]="!character.isPlayer"
           [class.defeated]="character.hitPoint === 0"
         >
-          {{ character.name }}@if (monsterNumber(character) !== null) {
-            <small class="monster-number">#{{ monsterNumber(character) }}</small>
+          {{ character.name }}
+          @if (monsterNumber(character) !== null) {
+            <small class="monster-number"
+              >#{{ monsterNumber(character) }}</small
+            >
           }
         </div>
       } @empty {
@@ -51,14 +74,30 @@
       <span class="status" [class.active]="onFight()">{{
         onFight() ? "KAMPF LÄUFT" : "VORBEREITUNG"
       }}</span>
-      <button
-        class="display-window-button"
-        (click)="openDisplayWindow()"
-        title="Zusatzfenster öffnen"
-      >
-        <svg lucideExternalLink [size]="16" aria-hidden="true"></svg>
-        Zusatzfenster
-      </button>
+      <div class="header-actions">
+        <button
+          type="button"
+          class="display-window-button theme-toggle"
+          (click)="theme.toggle()"
+          [attr.aria-pressed]="theme.mode() === 'light'"
+          aria-label="Hellen Modus aktivieren"
+          [title]="
+            theme.mode() === 'dark'
+              ? 'Zum hellen Modus wechseln'
+              : 'Zum dunklen Modus wechseln'
+          "
+        >
+          {{ theme.mode() === "dark" ? "☀ Hell" : "☾ Dunkel" }}
+        </button>
+        <button
+          class="display-window-button"
+          (click)="openDisplayWindow()"
+          title="Zusatzfenster öffnen"
+        >
+          <svg lucideExternalLink [size]="16" aria-hidden="true"></svg>
+          Zusatzfenster
+        </button>
+      </div>
     </header>
     @if (!onFight()) {
       <section class="setup panel">
